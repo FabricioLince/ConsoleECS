@@ -32,7 +32,7 @@ namespace ConsoleECS
 
             var npc = engine.CreateEntity();
             {
-                npc.AddComponent<Position>();//.Vector2 = new Vector2(0, 0);
+                npc.AddComponent<Position>().Vector2 = new Vector2(10, 0);
                 npc.AddComponent<Collider>();
                 npc.AddComponent<Renderer>().symbol = 'n';
                 npc.AddComponent<Npc>();

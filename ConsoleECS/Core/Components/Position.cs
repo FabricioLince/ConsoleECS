@@ -11,8 +11,8 @@ namespace ConsoleECS.Core.Components
     {
         Vector2 position;
 
-        public double X { get { return position.x; } }
-        public double Y { get { return position.y; } }
+        public double X { get { return position.x; } set { position.x = value; } }
+        public double Y { get { return position.y; } set { position.y = value; } }
         public Vector2 Vector2 { get { return position; } set { position = value; } }
 
         public Vector2Int Vector2Int { get { return position; } set { position = value; } }

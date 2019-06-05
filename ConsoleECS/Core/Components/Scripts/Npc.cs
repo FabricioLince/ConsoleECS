@@ -6,6 +6,7 @@ namespace ConsoleECS.Core.Components.Scripts
     [Dependecies(typeof(Position), typeof(Collider))]
     class Npc : Script
     {
+        // I wish there was a way to ignore these warnings automatically, wherever I put the [AssignDependence] attribute
 #pragma warning disable 649, 169
         [AssignDependence]
         Position position;

@@ -83,6 +83,8 @@ namespace ConsoleECS.Core
             systems.Add(new EnvironmentSystem(this));
             systems.Add(new RendererSystem(this));
             systems.Add(new GuiLayerSystem(this));
+
+            lastFrame = System.Environment.TickCount;
         }
 
         public void RunSystems()
