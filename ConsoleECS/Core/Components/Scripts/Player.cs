@@ -19,10 +19,15 @@ namespace ConsoleECS.Core.Components.Scripts
 
         bool keyDown = false;
 
+        public KeyCode upKey = KeyCode.Up;
+        public KeyCode downKey = KeyCode.Down;
+        public KeyCode leftKey = KeyCode.Left;
+        public KeyCode rightKey = KeyCode.Right;
+
         public override void OnCreate()
         {
             camera = Engine.GetSystem<CameraSystem>();
-            camera.Delta = position.Vector2Int - (Engine.Screen.Size / 2);
+            //camera.Delta = position.Vector2Int - (Engine.Screen.Size / 2);
         }
         public override void Loop()
         {
@@ -33,28 +38,28 @@ namespace ConsoleECS.Core.Components.Scripts
 
             Vector2 movement = Vector2.Zero;
 
-            if (NativeKeyboard.IsKeyDown(KeyCode.Up))
+            if (NativeKeyboard.IsKeyDown(upKey))
             {
                 if (keyDown) return;
                 keyDown = true;
 
                 movement += Vector2.Up;
             }
-            else if (NativeKeyboard.IsKeyDown(KeyCode.Down))
+            else if (NativeKeyboard.IsKeyDown(downKey))
             {
                 if (keyDown) return;
                 keyDown = true;
 
                 movement += Vector2.Down;
             }
-            else if (NativeKeyboard.IsKeyDown(KeyCode.Left))
+            else if (NativeKeyboard.IsKeyDown(leftKey))
             {
                 if (keyDown) return;
                 keyDown = true;
 
                 movement += Vector2.Left;
             }
-            else if (NativeKeyboard.IsKeyDown(KeyCode.Right))
+            else if (NativeKeyboard.IsKeyDown(rightKey))
             {
                 if (keyDown) return;
                 keyDown = true;
@@ -69,11 +74,11 @@ namespace ConsoleECS.Core.Components.Scripts
             if (Math.Abs(movement.x) > 0 ||
                 Math.Abs(movement.y) > 0)
             {
-                if (!collider.Move(movement, speed * Engine.DeltaTime))
-                    Console.Beep(740, 100);
+                //if (!collider.Move(movement, speed * Engine.DeltaTime)) Console.Beep(740, 100);
+                collider.Move(movement, speed * Engine.DeltaTime);
 
                 // center the camera on the player
-                camera.Delta = position.Vector2Int - (Engine.Screen.Size / 2);
+                //camera.Delta = position.Vector2Int - (Engine.Screen.Size / 2);
             }
         }
     }

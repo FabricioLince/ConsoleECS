@@ -2,9 +2,6 @@
 using ConsoleECS.Core.Vector;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleECS.Core.Systems
 {
@@ -17,8 +14,11 @@ namespace ConsoleECS.Core.Systems
         {
             this.engine = engine;
         }
-        public override void Work(Collider c)
+        public override void Work() { }
+
+        protected override void OnAddComponent(Collider c)
         {
+            base.OnAddComponent(c);
             c.system = this;
         }
 

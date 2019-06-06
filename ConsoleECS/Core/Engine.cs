@@ -77,12 +77,16 @@ namespace ConsoleECS.Core
         {
             Screen = new Screen();
 
+            systems.Add(new PositionSystem(this));
             systems.Add(new CameraSystem(this));
             systems.Add(new ColliderSystem(this));
             systems.Add(new ScriptSystem(this));
             systems.Add(new EnvironmentSystem(this));
             systems.Add(new RendererSystem(this));
             systems.Add(new GuiLayerSystem(this));
+
+            lastFrame = System.Environment.TickCount;
+            Time = 0;
         }
 
         public void RunSystems()
@@ -98,6 +102,7 @@ namespace ConsoleECS.Core
 
             DeltaTime = (currentTick - lastFrame) / 1000.0;
             lastFrame = currentTick;
+            Time += DeltaTime;
 
             foreach (var system in systems)
             {
@@ -115,6 +120,7 @@ namespace ConsoleECS.Core
         long frames;
         public double DeltaTime { get; private set; }
         public long FPS { get; private set; }
+        public double Time{get;private set;}
 
     }
 
