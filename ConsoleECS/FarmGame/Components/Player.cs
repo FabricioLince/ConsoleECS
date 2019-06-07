@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace ConsoleECS.FarmGame.Components
 {
+    using Sound = Core.Sound.SoundModule;
+    using Note = Core.Sound.Note;
+
     [Dependecies(typeof(Position), typeof(Collider))]
     class Player : Script
     {
@@ -28,6 +31,12 @@ namespace ConsoleECS.FarmGame.Components
         public KeyCode rightKey = KeyCode.Right;
         public KeyCode actKey = KeyCode.X;
 
+        Vector2Int lastStep;
+        List<Note> walkNotes = Sound.Parse("C:1, C#:1");
+        int i = 0;
+        Note walkNote => walkNotes[i++ % walkNotes.Count];
+        Sound.Player soundPlayer;
+
         public override void Loop()
         {
             Move();
@@ -47,6 +56,7 @@ namespace ConsoleECS.FarmGame.Components
                         if(crop.needsWater)
                         {
                             crop.WaterCrop();
+                            PlayImmediatly(Sound.Parse("E:1, F:1, F#:2"));
                         }
                     }
                 }
@@ -99,8 +109,34 @@ namespace ConsoleECS.FarmGame.Components
                 Math.Abs(movement.y) > 0)
             {
                 //if (!collider.Move(movement, speed * Engine.DeltaTime)) Console.Beep(740, 100);
-                collider.Move(movement, speed * Engine.DeltaTime);
+                if (collider.Move(movement, speed * Engine.DeltaTime))
+                {
+                    if (lastStep != position.Vector2Int)
+                    {
+                        lastStep = position.Vector2Int;
+                        PlayIfCan(walkNote);
+                    }
+                }
+                else
+                {
+                    PlayIfCan(Note.Parse("C3:2"));
+                }
             }
+        }
+
+
+        // Will probably move to its own component
+        void PlayIfCan(Note note)
+        {
+            if (soundPlayer == null || !soundPlayer.IsPlaying)
+            {
+                soundPlayer = Sound.Play(note);
+            }
+        }
+        void PlayImmediatly(IEnumerable<Note> notes)
+        {
+            if (soundPlayer != null) soundPlayer.Stop();
+            soundPlayer = Sound.Play(notes);
         }
     }
 }

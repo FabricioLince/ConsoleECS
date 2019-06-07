@@ -6,8 +6,10 @@ namespace ConsoleECS.Core.Components
     [Dependecies(typeof(Position))]
     class Collider : ComponentBase
     {
+#pragma warning disable 649, 169
         [AssignDependence]
         public Position position;
+#pragma warning restore 649, 169
 
         public int layerId = 0;
 

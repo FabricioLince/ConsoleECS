@@ -25,6 +25,8 @@ namespace ConsoleECS.FarmGame.Components
 
         public void WaterCrop()
         {
+            if (!needsWater) return;
+
             needsWater = false;
             stage++;
             timer = timeToGrow;
@@ -82,7 +84,7 @@ namespace ConsoleECS.FarmGame.Components
                     needsWater = false;
                     break;
                 case 9:
-                    renderer.foregroundColor = ConsoleColor.DarkRed ;
+                    renderer.foregroundColor = ConsoleColor.DarkRed;
                     needsWater = false;
                     break;
                 case 10:

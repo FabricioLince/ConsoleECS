@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 
 namespace ConsoleECS.FarmGame
 {
+
+    using Sound = Core.Sound.SoundModule;
+    using Note = Core.Sound.Note;
+
     class Game
     {
         Engine engine;

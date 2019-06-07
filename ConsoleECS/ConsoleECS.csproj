@@ -55,6 +55,8 @@
     <Compile Include="Core\Components\Scripts\Npc.cs" />
     <Compile Include="Core\Engine.cs" />
     <Compile Include="Core\Screen.cs" />
+    <Compile Include="Core\Sound\Note.cs" />
+    <Compile Include="Core\Sound\SoundModule.cs" />
     <Compile Include="Core\Systems\CameraSystem.cs" />
     <Compile Include="Core\Systems\ColliderSystem.cs" />
     <Compile Include="Core\Systems\EnvironmentSystem.cs" />
