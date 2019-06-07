@@ -46,14 +46,17 @@
     <Compile Include="Core\ComponentBase.cs" />
     <Compile Include="Core\ComponentSystem.cs" />
     <Compile Include="Core\Components\Collider.cs" />
+    <Compile Include="Core\Components\EnvironmentPiece.cs" />
     <Compile Include="Core\Components\GUI\Frame.cs" />
     <Compile Include="Core\Components\GUI\GuiObject.cs" />
     <Compile Include="Core\Components\GUI\Text.cs" />
     <Compile Include="Core\Components\Scripts\DelegateScript.cs" />
-    <Compile Include="Core\Components\Scripts\Player.cs" />
+    <Compile Include="Core\SceneManagement\SceneManager.cs" />
+    <Compile Include="Examples\Player.cs" />
     <Compile Include="Core\Components\Script.cs" />
-    <Compile Include="Core\Components\Scripts\Npc.cs" />
+    <Compile Include="Examples\Npc.cs" />
     <Compile Include="Core\Engine.cs" />
+    <Compile Include="Core\Input\Keyboard.cs" />
     <Compile Include="Core\Screen.cs" />
     <Compile Include="Core\Sound\Note.cs" />
     <Compile Include="Core\Sound\SoundModule.cs" />
@@ -70,8 +73,13 @@
     <Compile Include="Core\Vector\Vector2.cs" />
     <Compile Include="Core\Vector\Vector2Int.cs" />
     <Compile Include="FarmGame\Components\Crop.cs" />
+    <Compile Include="FarmGame\Components\PlantBox.cs" />
     <Compile Include="FarmGame\Components\Player.cs" />
+    <Compile Include="FarmGame\Components\Seed.cs" />
+    <Compile Include="FarmGame\EntityFactory.cs" />
     <Compile Include="FarmGame\Game.cs" />
+    <Compile Include="Core\SceneManagement\Scene.cs" />
+    <Compile Include="FarmGame\Scenes\MainGameScene.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

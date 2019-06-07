@@ -1,4 +1,5 @@
 ﻿using ConsoleECS.Core.Components;
+using ConsoleECS.Core.SceneManagement;
 using ConsoleECS.Core.Systems;
 using ConsoleECS.Core.Vector;
 using System;
@@ -11,6 +12,7 @@ namespace ConsoleECS.Core
     {
         List<IComponentSystem> systems = new List<IComponentSystem>();
         public Screen Screen { get; private set; }
+        public SceneManager SceneManager { get; private set; }
 
         public T GetSystem<T>() where T : class, IComponentSystem
         {
@@ -43,9 +45,10 @@ namespace ConsoleECS.Core
                 //Console.ReadKey(true);
             }
         }
-        public Entity CreateEntity()
+        public Entity CreateEntity(string name = "")
         {
             var entity = new Entity(this);
+            entity.Name = name;
             entity.OnAddComponent += OnAddComponent;
             return entity;
         }
@@ -76,6 +79,7 @@ namespace ConsoleECS.Core
         public Engine()
         {
             Screen = new Screen();
+            SceneManager = new SceneManager(this);
 
             systems.Add(new PositionSystem(this));
             systems.Add(new CameraSystem(this));
@@ -87,6 +91,15 @@ namespace ConsoleECS.Core
 
             lastFrame = System.Environment.TickCount;
             Time = 0;
+        }
+
+        public void StartWithScene<SceneType>() where SceneType : Scene, new()
+        {
+            SceneManager.ChangeSceneTo<SceneType>();
+            while (SceneManager.CurrentScene.Run)
+            {
+                RunSystems();
+            }
         }
 
         public void RunSystems()
@@ -120,7 +133,7 @@ namespace ConsoleECS.Core
         long frames;
         public double DeltaTime { get; private set; }
         public long FPS { get; private set; }
-        public double Time{get;private set;}
+        public double Time { get; private set; }
 
     }
 

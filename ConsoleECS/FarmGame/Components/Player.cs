@@ -1,10 +1,9 @@
 ﻿using ConsoleECS.Core.Components;
+using ConsoleECS.Core.Input;
+//using ConsoleECS.Core.Input;
 using ConsoleECS.Core.Vector;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleECS.FarmGame.Components
 {
@@ -37,63 +36,91 @@ namespace ConsoleECS.FarmGame.Components
         Note walkNote => walkNotes[i++ % walkNotes.Count];
         Sound.Player soundPlayer;
 
+        IHoldable holding = null;
+
         public override void Loop()
         {
             Move();
             Act();
         }
 
+        bool actKeyDown = false;
         void Act()
         {
-            if (NativeKeyboard.IsKeyDown(actKey))
+            if (Keyboard.IsKeyDown(actKey))
             {
+                if (actKeyDown) return;
+                actKeyDown = true;
+
+                if (holding != null)
+                {
+                    holding.DropOn(position.Vector2Int + direction);
+                    holding = null;
+                    return;
+                }
+
                 var list = position.system.FindPosition(position.Vector2Int + direction);
                 foreach (var p in list)
                 {
                     var crop = p.Entity.GetComponent<Crop>();
-                    if (crop != null)
+                    if (crop)
                     {
-                        if(crop.needsWater)
+                        if (crop.needsWater)
                         {
                             crop.WaterCrop();
                             PlayImmediatly(Sound.Parse("E:1, F:1, F#:2"));
                         }
+                        break;
+                    }
+                    else
+                    {
+                        var seed = p.Entity.GetComponent<Seed>();
+                        if (seed)
+                        {
+                            seed.PickUp(this.Entity);
+                            holding = seed;
+                            break;
+                        }
                     }
                 }
+            }
+            else
+            {
+                actKeyDown = false;
             }
         }
 
         void Move()
         {
-            if (!NativeKeyboard.IsKeyToggled(KeyCode.CapsLock))
+            if (!Keyboard.IsKeyToggled(KeyCode.CapsLock))
             {
                 keyDown = false;
             }
 
             Vector2 movement = Vector2.Zero;
 
-            if (NativeKeyboard.IsKeyDown(upKey))
+            if (Keyboard.IsKeyDown(upKey))
             {
                 if (keyDown) return;
                 keyDown = true;
                 direction = Vector2Int.Up;
                 movement += Vector2.Up;
             }
-            else if (NativeKeyboard.IsKeyDown(downKey))
+            else if (Keyboard.IsKeyDown(downKey))
             {
                 if (keyDown) return;
                 keyDown = true;
                 direction = Vector2Int.Down;
                 movement += Vector2.Down;
             }
-            else if (NativeKeyboard.IsKeyDown(leftKey))
+            else if (Keyboard.IsKeyDown(leftKey))
             {
                 if (keyDown) return;
                 keyDown = true;
                 direction = Vector2Int.Left;
                 movement += Vector2.Left;
             }
-            else if (NativeKeyboard.IsKeyDown(rightKey))
+            else if (Keyboard.IsKeyDown(rightKey))
             {
                 if (keyDown) return;
                 keyDown = true;

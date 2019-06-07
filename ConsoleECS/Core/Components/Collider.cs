@@ -12,6 +12,7 @@ namespace ConsoleECS.Core.Components
 #pragma warning restore 649, 169
 
         public int layerId = 0;
+        public bool enabled = true;
 
         public ColliderSystem system;
 

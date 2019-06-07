@@ -2,8 +2,10 @@
 using ConsoleECS.Core.Components;
 using ConsoleECS.Core.Components.GUI;
 using ConsoleECS.Core.Components.Scripts;
+using ConsoleECS.Core.Input;
 using ConsoleECS.Core.Systems;
 using ConsoleECS.Core.Vector;
+using ConsoleECS.Examples.Scripts;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -98,9 +100,9 @@ namespace ConsoleECS
             var scr = guiEntity.AddComponent<DelegateScript>();
             scr.LoopFunction = (script) =>
             {
-                if (NativeKeyboard.IsKeyDown(KeyCode.X))
+                if (Keyboard.IsKeyDown(KeyCode.X))
                 {
-                    while (NativeKeyboard.IsKeyDown(KeyCode.X)) Thread.Sleep(1);
+                    while (Keyboard.IsKeyDown(KeyCode.X)) Thread.Sleep(1);
                     engine.DestroyEntity(guiEntity);
                 }
                 if (((int)(script.Engine.Time * 2)) % 2 == 0)

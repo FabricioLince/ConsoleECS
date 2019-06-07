@@ -1,7 +1,8 @@
-﻿using ConsoleECS.Core.Vector;
+﻿using ConsoleECS.Core.Components;
+using ConsoleECS.Core.Vector;
 using System;
 
-namespace ConsoleECS.Core.Components.Scripts
+namespace ConsoleECS.Examples.Scripts
 {
     [Dependecies(typeof(Position), typeof(Collider))]
     class Npc : Script

@@ -82,6 +82,15 @@ namespace ConsoleECS.Core
             }
         }
 
+        public static bool operator!(ComponentBase c)
+        {
+            return (c == null);
+        }
+        public static implicit operator bool(ComponentBase c)
+        {
+            return (c != null);
+        }
+
         /// <summary>
         /// Use this attribute to signal the engine to automatically assign the value of another component on this entity to this field
         /// </summary>

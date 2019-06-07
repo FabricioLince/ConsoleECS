@@ -1,4 +1,5 @@
 ﻿using ConsoleECS.Core.Components;
+using ConsoleECS.Core.Input;
 using ConsoleECS.Core.Vector;
 
 namespace ConsoleECS.Core.Systems
@@ -21,19 +22,19 @@ namespace ConsoleECS.Core.Systems
             // This is for testing purposes
             // Ideally you should move the camera in a component of your choosing
 
-            if (NativeKeyboard.IsKeyDown(KeyCode.W))
+            if (Keyboard.IsKeyDown(KeyCode.W))
             {
                 Delta += Vector2Int.Up;
             }
-            else if (NativeKeyboard.IsKeyDown(KeyCode.S))
+            else if (Keyboard.IsKeyDown(KeyCode.S))
             {
                 Delta += Vector2Int.Down;
             }
-            else if (NativeKeyboard.IsKeyDown(KeyCode.A))
+            else if (Keyboard.IsKeyDown(KeyCode.A))
             {
                 Delta += Vector2Int.Left;
             }
-            else if (NativeKeyboard.IsKeyDown(KeyCode.D))
+            else if (Keyboard.IsKeyDown(KeyCode.D))
             {
                 Delta += Vector2Int.Right;
             }

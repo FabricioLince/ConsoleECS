@@ -24,12 +24,13 @@ namespace ConsoleECS.Core.Systems
 
         public bool CheckCollision(Vector2Int position, int layerId = 0)
         {
-            return components.Find(c => c.position.Vector2Int.Equals(position)) != null;
+            return components.Find(c => c.enabled && c.position.Vector2Int.Equals(position)) != null;
         }
         public bool CanMoveTo(Collider collider, Vector2Int position)
         {
             // TODO check layer
-            var obstacle = components.Find(c => c.position.Vector2Int.Equals(position));
+            if (!collider.enabled) return true;
+            var obstacle = components.Find(c => c.enabled && c.position.Vector2Int.Equals(position));
             return (obstacle == null || obstacle == collider);
         }
 
@@ -53,9 +54,11 @@ namespace ConsoleECS.Core.Systems
             if (layerCollisions.ContainsKey(layerA) == false)
             {
                 layerCollisions.Add(layerA, new Dictionary<int, bool>());
+                
             }
             return layerCollisions[layerA].ContainsKey(layerB)
-                && layerCollisions[layerA][layerB];
+                    && layerCollisions[layerA][layerB];
+
         }
     }
 }

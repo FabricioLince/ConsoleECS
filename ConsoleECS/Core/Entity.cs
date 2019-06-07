@@ -40,6 +40,11 @@ namespace ConsoleECS.Core
 
             return null;
         }
-    }
 
+        public static implicit operator bool(Entity e)
+        {
+            return e != null;
+        }
+
+    }
 }
