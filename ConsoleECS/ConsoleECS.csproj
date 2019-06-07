@@ -55,10 +55,13 @@
     <Compile Include="Core\Components\Scripts\Npc.cs" />
     <Compile Include="Core\Engine.cs" />
     <Compile Include="Core\Screen.cs" />
+    <Compile Include="Core\Sound\Note.cs" />
+    <Compile Include="Core\Sound\SoundModule.cs" />
     <Compile Include="Core\Systems\CameraSystem.cs" />
     <Compile Include="Core\Systems\ColliderSystem.cs" />
     <Compile Include="Core\Systems\EnvironmentSystem.cs" />
     <Compile Include="Core\Systems\GuiLayerSystem.cs" />
+    <Compile Include="Core\Systems\PositionSystem.cs" />
     <Compile Include="Core\Systems\RendererSystem.cs" />
     <Compile Include="Core\Components\Position.cs" />
     <Compile Include="Core\Components\Renderer.cs" />
@@ -66,11 +69,15 @@
     <Compile Include="Core\Systems\ScriptSystem.cs" />
     <Compile Include="Core\Vector\Vector2.cs" />
     <Compile Include="Core\Vector\Vector2Int.cs" />
+    <Compile Include="FarmGame\Components\Crop.cs" />
+    <Compile Include="FarmGame\Components\Player.cs" />
+    <Compile Include="FarmGame\Game.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

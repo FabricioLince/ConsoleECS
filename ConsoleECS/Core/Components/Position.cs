@@ -1,4 +1,5 @@
-﻿using ConsoleECS.Core.Vector;
+﻿using ConsoleECS.Core.Systems;
+using ConsoleECS.Core.Vector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace ConsoleECS.Core.Components
     public class Position : ComponentBase
     {
         Vector2 position;
+        internal PositionSystem system;
 
         public double X { get { return position.x; } set { position.x = value; } }
         public double Y { get { return position.y; } set { position.y = value; } }
