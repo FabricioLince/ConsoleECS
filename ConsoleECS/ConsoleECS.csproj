@@ -76,6 +76,7 @@
     <Compile Include="FarmGame\Components\PlantBox.cs" />
     <Compile Include="FarmGame\Components\Player.cs" />
     <Compile Include="FarmGame\Components\Seed.cs" />
+    <Compile Include="FarmGame\Components\SeedBox.cs" />
     <Compile Include="FarmGame\EntityFactory.cs" />
     <Compile Include="FarmGame\Game.cs" />
     <Compile Include="Core\SceneManagement\Scene.cs" />

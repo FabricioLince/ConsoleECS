@@ -23,7 +23,16 @@ namespace ConsoleECS.FarmGame
         
         public static void Main(string[] args)
         {
-            new Game().Run();
+            try
+            {
+                new Game().Run();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
+                Console.Error.WriteLine(e.StackTrace);
+                Console.ReadKey();
+            }
         }
     }
 }

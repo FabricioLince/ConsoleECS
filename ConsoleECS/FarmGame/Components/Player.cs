@@ -1,4 +1,5 @@
-﻿using ConsoleECS.Core.Components;
+﻿using ConsoleECS.Core;
+using ConsoleECS.Core.Components;
 using ConsoleECS.Core.Input;
 //using ConsoleECS.Core.Input;
 using ConsoleECS.Core.Vector;
@@ -54,8 +55,26 @@ namespace ConsoleECS.FarmGame.Components
 
                 if (holding != null)
                 {
-                    holding.DropOn(position.Vector2Int + direction);
-                    holding = null;
+                    var plantBox = ComponentInFront<PlantBox>();
+                    if (plantBox)
+                    {
+                        if (holding is Seed)
+                        {
+                            plantBox.Plant(holding as Seed);
+                            Engine.DestroyEntity((holding as Seed).Entity);
+                            holding = null;
+                            return;
+                        }
+                    }
+
+                    var coll = ComponentInFront<Collider>();
+                    if (!coll || !coll.enabled)
+                    {
+                        holding.DropOn(position.Vector2Int + direction);
+                        holding = null;
+                        return;
+                    }
+
                     return;
                 }
 
@@ -149,6 +168,17 @@ namespace ConsoleECS.FarmGame.Components
                     PlayIfCan(Note.Parse("C3:2"));
                 }
             }
+        }
+
+        Component ComponentInFront<Component>() where Component : ComponentBase
+        {
+            var list = position.system.FindPosition(position.Vector2Int + direction);
+            foreach (var pos in list)
+            {
+                var ent = pos.Entity.GetComponent<Component>();
+                if (ent) return ent;
+            }
+            return null;
         }
 
 

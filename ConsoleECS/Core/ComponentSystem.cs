@@ -43,9 +43,9 @@ namespace ConsoleECS.Core
 
         public virtual void Work()
         {
-            foreach(var c in components)
+            for (int i = 0; i < components.Count; ++i) 
             {
-                Work(c);
+                Work(components[i]);
             }
         }
         public virtual void Work(Component c) { }

@@ -28,6 +28,10 @@ namespace ConsoleECS.Core.Components
         {
             return p.position;
         }
+        public static implicit operator Vector2Int(Position p)
+        {
+            return p.Vector2Int;
+        }
 
         public override string ToString()
         {

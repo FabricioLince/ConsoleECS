@@ -15,7 +15,7 @@ namespace ConsoleECS.FarmGame.Scenes
             PrepareSoil();
 
             EntityFactory.CreatePlayer(new Vector2Int(2, 2));
-            EntityFactory.CreateSeed(new Vector2Int(12, 8));
+            EntityFactory.CreateSeedBox(new Vector2Int(12, 8));
 
             PlantCrop(new Vector2Int(5, 5));
             PlantCrop(new Vector2Int(6, 5));

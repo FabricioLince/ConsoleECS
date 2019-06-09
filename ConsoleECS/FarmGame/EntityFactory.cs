@@ -23,6 +23,16 @@ namespace ConsoleECS.FarmGame
             return entity;
         }
 
+        public static Entity CreateSeedBox(Vector2Int position)
+        {
+            var entity = CreateEntity("SeedBox");
+            entity.AddComponent<Position>().Vector2Int = position;
+            entity.AddComponent<Renderer>();
+            entity.AddComponent<Collider>();
+            entity.AddComponent<SeedBox>();
+
+            return entity;
+        }
         public static Entity CreateSeed(Vector2Int position)
         {
             var entity = CreateEntity("Seed");
