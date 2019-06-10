@@ -7,13 +7,10 @@ namespace ConsoleECS.Examples.Scripts
     [Dependecies(typeof(Position), typeof(Collider))]
     class Npc : Script
     {
-        // I wish there was a way to ignore these warnings automatically, wherever I put the [AssignDependence] attribute
-#pragma warning disable 649, 169
         [AssignDependence]
         Position position;
         [AssignDependence]
         Collider collider;
-#pragma warning restore 649, 169
 
         double timer = 0;
         Random random = new Random();

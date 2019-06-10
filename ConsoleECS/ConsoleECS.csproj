@@ -74,6 +74,8 @@
     <Compile Include="Core\Vector\Vector2Int.cs" />
     <Compile Include="FarmGame\Components\Crop.cs" />
     <Compile Include="FarmGame\Components\HoldableItem.cs" />
+    <Compile Include="FarmGame\Components\Holder.cs" />
+    <Compile Include="FarmGame\Components\Npc.cs" />
     <Compile Include="FarmGame\Components\PlantBox.cs" />
     <Compile Include="FarmGame\Components\Player.cs" />
     <Compile Include="FarmGame\Components\Produce.cs" />

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#pragma warning disable 649, 169
 namespace ConsoleECS.FarmGame.Components
 {
     [Dependecies(typeof(Position), typeof(Renderer))]
@@ -20,7 +21,7 @@ namespace ConsoleECS.FarmGame.Components
         double timer = 5;
         int stage = 0;
         public bool needsWater = true;
-        public bool dead = false;
+        public bool Dead { get; private set; } = false;
         char Symbol
         {
             get
@@ -64,7 +65,7 @@ namespace ConsoleECS.FarmGame.Components
                 
                 if (timer < 0)
                 {
-                    dead = true;
+                    Dead = true;
                 }
             }
             else
@@ -88,7 +89,7 @@ namespace ConsoleECS.FarmGame.Components
                 Engine.DestroyEntity(this.Entity);
             }
 
-            if(dead)
+            if(Dead)
             {
                 renderer.symbol = 'x';
                 renderer.foregroundColor = ConsoleColor.DarkYellow;

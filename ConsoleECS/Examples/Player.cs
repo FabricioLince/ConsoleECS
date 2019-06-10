@@ -4,6 +4,7 @@ using ConsoleECS.Core.Systems;
 using ConsoleECS.Core.Vector;
 using System;
 
+#pragma warning disable 649, 169
 namespace ConsoleECS.Examples.Scripts
 {
     [Dependecies(typeof(Position), typeof(Collider))]

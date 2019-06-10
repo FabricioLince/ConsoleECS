@@ -72,17 +72,28 @@ namespace ConsoleECS.FarmGame
 
         public static Entity CreatePlayer(Vector2Int position)
         {
-            var player = CreateEntity("Player");
-
-            player.AddComponent<Position>().Vector2Int = position;
-            var renderer = player.AddComponent<Renderer>();
+            var player = CreateEntity("Player", position);
+            var renderer = player.GetComponent<Renderer>();
             renderer.symbol = 'A';
             renderer.foregroundColor = ConsoleColor.Blue;
-            player.AddComponent<Collider>();
+
+            player.AddComponent<Holder>();
             player.AddComponent<Player>();
             player.GetComponent<Player>().speed = 10;
 
             return player;
+        }
+        public static Entity CreateNpc(Vector2Int position)
+        {
+            var npc = CreateEntity("Npc", position);
+            var renderer = npc.GetComponent<Renderer>();
+            renderer.symbol = 'a';
+            renderer.foregroundColor = ConsoleColor.Blue;
+
+            npc.AddComponent<Holder>();
+            npc.AddComponent<Npc>();
+
+            return npc;
         }
 
         public static Entity CreateEntity(string name, Vector2Int position, bool collider = true)

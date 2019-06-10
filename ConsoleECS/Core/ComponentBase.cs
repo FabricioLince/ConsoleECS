@@ -75,7 +75,7 @@ namespace ConsoleECS.Core
             var type = GetType();
             while (type != null)
             {
-                var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var fields = type.GetFields( BindingFlags.SetProperty| BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 foreach (var field in fields)
                 {
                     //Console.WriteLine("\t" + field.FieldType + " " + field.Name);
@@ -88,6 +88,24 @@ namespace ConsoleECS.Core
                         {
                             var value = dependencies[field.FieldType];
                             field.SetValue(this, value);
+                            //Console.WriteLine(value.Equals(field.GetValue(this)));
+                        }
+                        //else throw new Exception(field.FieldType + " not found in dependencies of " + type.FullName);
+                    }
+                }
+                var properties = type.GetProperties(BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                foreach (var prop in properties)
+                {
+                    //Console.WriteLine("\t" + field.FieldType + " " + field.Name);
+
+                    var att = prop.GetCustomAttribute<AssignDependenceAttribute>();
+                    if (att != null)
+                    {
+                        //Console.WriteLine("\t" + att);
+                        //if (dependencies.ContainsKey(field.FieldType))
+                        {
+                            var value = dependencies[prop.PropertyType];
+                            prop.SetValue(this, value);
                             //Console.WriteLine(value.Equals(field.GetValue(this)));
                         }
                         //else throw new Exception(field.FieldType + " not found in dependencies of " + type.FullName);
@@ -123,7 +141,7 @@ namespace ConsoleECS.Core
         /// <summary>
         /// Use this attribute to signal the engine to automatically assign the value of another component on this entity to this field
         /// </summary>
-        [AttributeUsage(AttributeTargets.Field)]
+        [AttributeUsage(AttributeTargets.Field| AttributeTargets.Property)]
         public class AssignDependenceAttribute : Attribute
         {
         }

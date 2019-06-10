@@ -4,18 +4,19 @@ using ConsoleECS.Core.Input;
 using ConsoleECS.Core.Vector;
 using System;
 using System.Collections.Generic;
+#pragma warning disable 649, 169
 
 namespace ConsoleECS.FarmGame.Components
 {
     using Sound = Core.Sound.SoundModule;
     using Note = Core.Sound.Note;
 
-    [Dependecies(typeof(Position), typeof(Collider))]
+    [Dependecies(typeof(Position), typeof(Collider), typeof(Holder))]
     class Player : Script
     {
-        [AssignDependence] Position position;
-
-        [AssignDependence] Collider collider;
+        [AssignDependence] public Position Position { get; private set; }
+        [AssignDependence] public Collider Collider { get; private set; }
+        [AssignDependence] public Holder Holder { get; private set; }
 
         public double speed = 20;
         public Vector2Int direction = Vector2Int.Up;
@@ -34,8 +35,6 @@ namespace ConsoleECS.FarmGame.Components
         Note walkNote => walkNotes[i++ % walkNotes.Count];
         Sound.Player soundPlayer;
 
-        HoldableItem holding = null;
-
         public override void Loop()
         {
             Move();
@@ -50,15 +49,15 @@ namespace ConsoleECS.FarmGame.Components
                 if (actKeyDown) return;
                 actKeyDown = true;
 
-                if (holding)
+                if (Holder.holding)
                 {
                     var plantBox = ComponentInFront<PlantBox>();
                     if (plantBox && plantBox.Empty)
                     {
-                        if (holding is Seed)
+                        if (Holder.holding is Seed)
                         {
-                            plantBox.Plant(holding as Seed);
-                            Engine.DestroyEntity(holding.Entity);
+                            plantBox.Plant(Holder.holding as Seed);
+                            Engine.DestroyEntity(Holder.holding.Entity);
                             return;
                         }
                     }
@@ -66,15 +65,14 @@ namespace ConsoleECS.FarmGame.Components
                     var coll = ComponentInFront<Collider>();
                     if (!coll || !coll.enabled)
                     {
-                        holding.DropOn(position.Vector2Int + direction);
-                        holding = null;
+                        Holder.DropItemOn(Position.Vector2Int + direction);
                         return;
                     }
 
                     return;
                 }
 
-                var list = position.system.FindPosition(position.Vector2Int + direction);
+                var list = Position.system.FindPosition(Position.Vector2Int + direction);
                 foreach (var p in list)
                 {
                     var crop = p.Entity.GetComponent<Crop>();
@@ -85,6 +83,10 @@ namespace ConsoleECS.FarmGame.Components
                             crop.WaterCrop();
                             PlayImmediatly(Sound.Parse("E:1, F:1, F#:2"));
                         }
+                        else if (crop.Dead)
+                        {
+                            Engine.DestroyEntity(crop.Entity);
+                        }
                         break;
                     }
                     else
@@ -92,8 +94,7 @@ namespace ConsoleECS.FarmGame.Components
                         var item = p.Entity.GetComponent<HoldableItem>();
                         if (item)
                         {
-                            item.PickUp(this.Entity);
-                            holding = item;
+                            Holder.PickItem(item);
                             break;
                         }
                     }
@@ -151,11 +152,11 @@ namespace ConsoleECS.FarmGame.Components
                 Math.Abs(movement.y) > 0)
             {
                 //if (!collider.Move(movement, speed * Engine.DeltaTime)) Console.Beep(740, 100);
-                if (collider.Move(movement, speed * Engine.DeltaTime))
+                if (Collider.Move(movement, speed * Engine.DeltaTime))
                 {
-                    if (lastStep != position.Vector2Int)
+                    if (lastStep != Position.Vector2Int)
                     {
-                        lastStep = position.Vector2Int;
+                        lastStep = Position.Vector2Int;
                         PlayIfCan(walkNote);
                     }
                 }
@@ -168,7 +169,7 @@ namespace ConsoleECS.FarmGame.Components
 
         Component ComponentInFront<Component>() where Component : ComponentBase
         {
-            var list = position.system.FindPosition(position.Vector2Int + direction);
+            var list = Position.system.FindPosition(Position.Vector2Int + direction);
             foreach (var pos in list)
             {
                 var ent = pos.Entity.GetComponent<Component>();
@@ -181,7 +182,6 @@ namespace ConsoleECS.FarmGame.Components
         // Will probably move to its own component
         void PlayIfCan(Note note)
         {
-            return;
             if (soundPlayer == null || !soundPlayer.IsPlaying)
             {
                 soundPlayer = Sound.Play(note);
@@ -189,7 +189,6 @@ namespace ConsoleECS.FarmGame.Components
         }
         void PlayImmediatly(IEnumerable<Note> notes)
         {
-            return;
             if (soundPlayer != null) soundPlayer.Stop();
             soundPlayer = Sound.Play(notes);
         }

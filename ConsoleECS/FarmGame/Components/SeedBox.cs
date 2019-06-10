@@ -1,4 +1,5 @@
 ﻿using ConsoleECS.Core.Components;
+using System.Collections.Generic;
 
 namespace ConsoleECS.FarmGame.Components
 {
@@ -6,19 +7,27 @@ namespace ConsoleECS.FarmGame.Components
     class SeedBox : Script
     {
         public Crop.Kind kind;
-        [AssignDependence] Position position;
+        [AssignDependence] public Position Position { get; private set; }
 
         Seed mySeed;
         Position mySeedPosition;
 
         public override void Loop()
         {
-            if (mySeed == null || mySeedPosition.Vector2Int != position.Vector2Int)
+            if (mySeed == null || mySeedPosition.Vector2Int != Position.Vector2Int)
             {
-                var ent = EntityFactory.CreateSeed(position, kind);
+                var ent = EntityFactory.CreateSeed(Position, kind);
                 mySeed = ent.GetComponent<Seed>();
                 mySeedPosition = ent.GetComponent<Position>();
             }
         }
+
+        public override void OnCreate()
+        {
+            base.OnCreate();
+            List.Add(this);
+        }
+
+        public static readonly List<SeedBox> List = new List<SeedBox>();
     }
 }

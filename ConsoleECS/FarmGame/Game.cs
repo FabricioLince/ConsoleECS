@@ -4,6 +4,8 @@ using System;
 
 namespace ConsoleECS.FarmGame
 {
+    // I wish there was a way to ignore these warnings automatically, wherever I put the [AssignDependence] attribute
+#pragma warning disable 649, 169
     class Game
     {
         Engine engine;
