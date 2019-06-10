@@ -1,7 +1,6 @@
 ﻿using ConsoleECS.Core;
 using ConsoleECS.Core.Components;
 using ConsoleECS.Core.Input;
-//using ConsoleECS.Core.Input;
 using ConsoleECS.Core.Vector;
 using System;
 using System.Collections.Generic;
@@ -14,11 +13,9 @@ namespace ConsoleECS.FarmGame.Components
     [Dependecies(typeof(Position), typeof(Collider))]
     class Player : Script
     {
-        [AssignDependence]
-        Position position;
+        [AssignDependence] Position position;
 
-        [AssignDependence]
-        Collider collider;
+        [AssignDependence] Collider collider;
 
         public double speed = 20;
         public Vector2Int direction = Vector2Int.Up;
@@ -37,7 +34,7 @@ namespace ConsoleECS.FarmGame.Components
         Note walkNote => walkNotes[i++ % walkNotes.Count];
         Sound.Player soundPlayer;
 
-        IHoldable holding = null;
+        HoldableItem holding = null;
 
         public override void Loop()
         {
@@ -53,16 +50,15 @@ namespace ConsoleECS.FarmGame.Components
                 if (actKeyDown) return;
                 actKeyDown = true;
 
-                if (holding != null)
+                if (holding)
                 {
                     var plantBox = ComponentInFront<PlantBox>();
-                    if (plantBox)
+                    if (plantBox && plantBox.Empty)
                     {
                         if (holding is Seed)
                         {
                             plantBox.Plant(holding as Seed);
-                            Engine.DestroyEntity((holding as Seed).Entity);
-                            holding = null;
+                            Engine.DestroyEntity(holding.Entity);
                             return;
                         }
                     }
@@ -93,11 +89,11 @@ namespace ConsoleECS.FarmGame.Components
                     }
                     else
                     {
-                        var seed = p.Entity.GetComponent<Seed>();
-                        if (seed)
+                        var item = p.Entity.GetComponent<HoldableItem>();
+                        if (item)
                         {
-                            seed.PickUp(this.Entity);
-                            holding = seed;
+                            item.PickUp(this.Entity);
+                            holding = item;
                             break;
                         }
                     }
@@ -185,6 +181,7 @@ namespace ConsoleECS.FarmGame.Components
         // Will probably move to its own component
         void PlayIfCan(Note note)
         {
+            return;
             if (soundPlayer == null || !soundPlayer.IsPlaying)
             {
                 soundPlayer = Sound.Play(note);
@@ -192,6 +189,7 @@ namespace ConsoleECS.FarmGame.Components
         }
         void PlayImmediatly(IEnumerable<Note> notes)
         {
+            return;
             if (soundPlayer != null) soundPlayer.Stop();
             soundPlayer = Sound.Play(notes);
         }

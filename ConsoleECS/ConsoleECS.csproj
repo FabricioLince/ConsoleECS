@@ -73,8 +73,10 @@
     <Compile Include="Core\Vector\Vector2.cs" />
     <Compile Include="Core\Vector\Vector2Int.cs" />
     <Compile Include="FarmGame\Components\Crop.cs" />
+    <Compile Include="FarmGame\Components\HoldableItem.cs" />
     <Compile Include="FarmGame\Components\PlantBox.cs" />
     <Compile Include="FarmGame\Components\Player.cs" />
+    <Compile Include="FarmGame\Components\Produce.cs" />
     <Compile Include="FarmGame\Components\Seed.cs" />
     <Compile Include="FarmGame\Components\SeedBox.cs" />
     <Compile Include="FarmGame\EntityFactory.cs" />
@@ -83,6 +85,7 @@
     <Compile Include="FarmGame\Scenes\MainGameScene.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

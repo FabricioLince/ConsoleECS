@@ -1,48 +1,18 @@
 ﻿using ConsoleECS.Core;
 using ConsoleECS.Core.Components;
-using ConsoleECS.Core.Vector;
 using System;
 
 namespace ConsoleECS.FarmGame.Components
 {
-    public interface IHoldable
+    [Dependecies(typeof(Renderer))]
+    class Seed : HoldableItem
     {
-        Entity HeldBy { get; set; }
-        void DropOn(Vector2Int position);
-        void PickUp(Entity entity);
-    }
-
-    [Dependecies(typeof(Position), typeof(Renderer), typeof(Collider))]
-    class Seed : Script, IHoldable
-    {
-        [AssignDependence]
-        Renderer renderer;
-        [AssignDependence]
-        Position position;
-        [AssignDependence]
-        Collider collider;
-
-        Position holderPosition;
-        public Entity HeldBy { get; set; }
-        public void DropOn(Vector2Int local)
-        {
-            HeldBy = null;
-            position.Vector2Int = local;
-            collider.enabled = true;
-        }
-        public void PickUp(Entity p)
-        {
-            HeldBy = p;
-            holderPosition = HeldBy.GetComponent<Position>();
-            collider.enabled = false;
-        }
+        public Crop.Kind kind;
+        [AssignDependence] Renderer renderer;
 
         public override void Loop()
         {
-            if (HeldBy)
-            {
-                position.Vector2Int =  holderPosition.Vector2Int + Vector2Int.Up;
-            }
+            base.Loop();
 
             if ((int)(Engine.Time * 5) % 2 == 0)
             {
@@ -50,7 +20,7 @@ namespace ConsoleECS.FarmGame.Components
             }
             else
             {
-                renderer.symbol = 't';
+                renderer.symbol = Crop.SymbolFor(kind)[0];
             }
         }
     }

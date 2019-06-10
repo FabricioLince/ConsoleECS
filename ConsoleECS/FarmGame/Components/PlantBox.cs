@@ -10,10 +10,12 @@ namespace ConsoleECS.FarmGame.Components
         public Crop crop;
         public bool HasCrop => crop != null;
 
+        public bool Empty => !HasCrop;
+
         public bool Plant(Seed seed)
         {
             if (HasCrop) return false;
-            var ent = EntityFactory.CreateCrop(position.Vector2Int);
+            var ent = EntityFactory.CreateCrop(position.Vector2Int, seed.kind);
             crop = ent.GetComponent<Crop>();
             return true;
         }

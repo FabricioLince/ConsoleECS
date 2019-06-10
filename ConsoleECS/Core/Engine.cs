@@ -56,11 +56,13 @@ namespace ConsoleECS.Core
         public void DestroyEntity(Entity entity)
         {
             foreach (var c in entity.components)
-                toDestroy.Add(c);
+                DestroyComponent(c);
+            entity.Dispose();
         }
         public void DestroyComponent(ComponentBase component)
         {
             toDestroy.Add(component);
+            component.Dispose();
         }
 
         void DestroyPendingEntities()
@@ -71,6 +73,8 @@ namespace ConsoleECS.Core
             {
                 var system = GetSystem(c.GetType());
                 system?.Remove(c);
+
+                c.Entity.components.Remove(c);
             }
 
             toDestroy.Clear();

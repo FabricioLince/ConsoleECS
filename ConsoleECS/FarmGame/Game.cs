@@ -4,18 +4,15 @@ using System;
 
 namespace ConsoleECS.FarmGame
 {
-    using Sound = Core.Sound.SoundModule;
-    using Note = Core.Sound.Note;
     class Game
     {
         Engine engine;
 
         public void Run()
         {
-            engine = new Engine();
             Console.WindowWidth = 40;
             Console.WindowHeight = 30;
-            engine.Screen.UpdateBufferAllocation();
+            engine = new Engine();
 
             engine.StartWithScene<MainGameScene>();
         }
@@ -29,10 +26,14 @@ namespace ConsoleECS.FarmGame
             }
             catch (Exception e)
             {
+                Console.BufferHeight = 150;
+                Console.BufferWidth = 150;
                 Console.Error.WriteLine(e.Message);
                 Console.Error.WriteLine(e.StackTrace);
-                Console.ReadKey();
+                Console.ReadLine();
+                throw;
             }
+            
         }
     }
 }

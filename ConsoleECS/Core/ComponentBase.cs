@@ -11,15 +11,26 @@ namespace ConsoleECS.Core
 
         public Entity Entity { get; private set; }
         public Engine Engine { get; private set; }
-
+        /// <summary>
+        /// Disposed means it was destroyed by the engine and shouldn't be used anymore 
+        /// Converting to boolean and checking if == null will taking the Disposed status into consideration
+        /// </summary>
+        public bool Disposed { get; private set; }
         public virtual void OnCreate() { }
 
-        private System.Type[] GetAllDependecies()
+        private List<Type> GetAllDependecies()
         {
-            var attr = GetType().GetCustomAttribute<DependeciesAttribute>();
+            var list = new List<Type>();
+            var attr = GetType().GetCustomAttributes<DependeciesAttribute>();
             if (attr != null)
-                return attr.types;
-            return null;
+            {
+                foreach (var item in attr)
+                {
+                    list.AddRange(item.types);
+                }
+            }
+
+            return list;
         }
 
         protected T GetDependencieOfType<T>() where T : ComponentBase
@@ -34,7 +45,7 @@ namespace ConsoleECS.Core
             Engine = entity.Engine;
 
             var types = GetAllDependecies();
-            if (types == null || types.Length == 0) return;
+            if (types == null || types.Count == 0) return;
 
             dependencies = new Dictionary<Type, ComponentBase>();
             foreach (var type in types)
@@ -61,34 +72,52 @@ namespace ConsoleECS.Core
         protected void AssignDepenciesValuesOnFields()
         {
             //Console.WriteLine(this.GetType().Name);
-
-            var fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            foreach(var field in fields)
+            var type = GetType();
+            while (type != null)
             {
-                //Console.WriteLine("\t" + field.FieldType + " " + field.Name);
-
-                var att = field.GetCustomAttribute<AssignDependenceAttribute>();
-                if (att != null)
+                var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                foreach (var field in fields)
                 {
-                    //Console.WriteLine("\t" + att);
-                    if (dependencies.ContainsKey(field.FieldType))
+                    //Console.WriteLine("\t" + field.FieldType + " " + field.Name);
+
+                    var att = field.GetCustomAttribute<AssignDependenceAttribute>();
+                    if (att != null)
                     {
-                        var value = dependencies[field.FieldType];
-                        field.SetValue(this, value);
-                        //Console.WriteLine(value.Equals(field.GetValue(this)));
+                        //Console.WriteLine("\t" + att);
+                        //if (dependencies.ContainsKey(field.FieldType))
+                        {
+                            var value = dependencies[field.FieldType];
+                            field.SetValue(this, value);
+                            //Console.WriteLine(value.Equals(field.GetValue(this)));
+                        }
+                        //else throw new Exception(field.FieldType + " not found in dependencies of " + type.FullName);
                     }
-                    else Console.WriteLine(field.FieldType + " not found in dependencies");
                 }
+                type = type.BaseType;
             }
         }
 
-        public static bool operator!(ComponentBase c)
-        {
-            return (c == null);
-        }
+        public void Dispose() => Disposed = true;
+
         public static implicit operator bool(ComponentBase c)
         {
-            return (c != null);
+            return !(c is null) && !c.Disposed;
+        }
+        public static bool operator ==(ComponentBase c, object o)
+        {
+            if (o == null)
+            {
+                return !c;
+            }
+            return c.Equals(o);
+        }
+        public static bool operator !=(ComponentBase c, object o)
+        {
+            if (o == null)
+            {
+                return c;
+            }
+            return c.Equals(o);
         }
 
         /// <summary>

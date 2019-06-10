@@ -4,10 +4,6 @@ using ConsoleECS.Core.SceneManagement;
 using ConsoleECS.Core.Vector;
 using ConsoleECS.FarmGame.Components;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleECS.FarmGame
 {
@@ -23,25 +19,33 @@ namespace ConsoleECS.FarmGame
             return entity;
         }
 
-        public static Entity CreateSeedBox(Vector2Int position)
+        public static Entity CreateSeedBox(Vector2Int position, Crop.Kind kind)
         {
-            var entity = CreateEntity("SeedBox");
-            entity.AddComponent<Position>().Vector2Int = position;
-            entity.AddComponent<Renderer>();
-            entity.AddComponent<Collider>();
-            entity.AddComponent<SeedBox>();
+            var entity = CreateEntity("SeedBox", position);
+            entity.AddComponent<SeedBox>().kind = kind;
 
             return entity;
         }
-        public static Entity CreateSeed(Vector2Int position)
+        public static Entity CreateSeed(Vector2Int position, Crop.Kind kind)
         {
-            var entity = CreateEntity("Seed");
-            entity.AddComponent<Position>().Vector2Int = position;
-            entity.AddComponent<Renderer>();
-            entity.AddComponent<Collider>();
-            entity.AddComponent<Seed>();
+            var entity = CreateEntity("Seed", position);
+            entity.AddComponent<Seed>().kind = kind;
 
             return entity;
+        }
+        public static Entity CreateCrop(Vector2Int position, Crop.Kind kind)
+        {
+            var entity = CreateEntity("Crop", position);
+            entity.AddComponent<Crop>().kind = kind;
+            return entity;
+        }
+        public static Entity CreateProduce(Vector2Int position, Crop.Kind kind)
+        {
+            var ent = CreateEntity("Produce", position);
+            ent.AddComponent<Produce>().kind = kind;
+            ent.GetComponent<Renderer>().symbol = Crop.SymbolFor(kind)[1];
+            ent.GetComponent<Renderer>().foregroundColor = Crop.ColorFor(kind);
+            return ent;
         }
 
         public static Entity CreateSoil(Vector2Int position, Vector2Int size)
@@ -65,17 +69,6 @@ namespace ConsoleECS.FarmGame
 
             return entity;
         }
-        public static Entity CreateCrop(Vector2Int position)
-        {
-            var entity = CreateEntity("Crop");
-            entity.AddComponent<Position>().Vector2Int = position;
-            entity.AddComponent<Renderer>();
-            entity.AddComponent<Collider>();
-            entity.AddComponent<Crop>();
-            return entity;
-        }
-
-
 
         public static Entity CreatePlayer(Vector2Int position)
         {
@@ -90,6 +83,19 @@ namespace ConsoleECS.FarmGame
             player.GetComponent<Player>().speed = 10;
 
             return player;
+        }
+
+        public static Entity CreateEntity(string name, Vector2Int position, bool collider = true)
+        {
+            var entity = CreateEntity(name);
+            entity.AddComponent<Position>().Vector2Int = position;
+            entity.AddComponent<Renderer>();
+            if (collider)
+            {
+                entity.AddComponent<Collider>();
+            }
+
+            return entity;
         }
     }
 }

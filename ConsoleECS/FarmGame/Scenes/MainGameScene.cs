@@ -15,15 +15,9 @@ namespace ConsoleECS.FarmGame.Scenes
             PrepareSoil();
 
             EntityFactory.CreatePlayer(new Vector2Int(2, 2));
-            EntityFactory.CreateSeedBox(new Vector2Int(12, 8));
-
-            PlantCrop(new Vector2Int(5, 5));
-            PlantCrop(new Vector2Int(6, 5));
-            PlantCrop(new Vector2Int(7, 5));
-
-            PlantCrop(new Vector2Int(6, 8));
-            PlantCrop(new Vector2Int(7, 8));
-            PlantCrop(new Vector2Int(8, 8));
+            EntityFactory.CreateSeedBox(new Vector2Int(12, 8), Crop.Kind.Tomato);
+            EntityFactory.CreateSeedBox(new Vector2Int(12, 9), Crop.Kind.Carrot);
+            EntityFactory.CreateSeedBox(new Vector2Int(12, 10), Crop.Kind.Lettuce);
 
             //foreach (var ent in entities) Console.WriteLine(ent.Key);
             //Console.ReadKey();
@@ -34,12 +28,7 @@ namespace ConsoleECS.FarmGame.Scenes
             EntityFactory.CreateSoil(new Vector2Int(5, 5), new Vector2Int(4, 2));
         }
 
-        void PlantCrop(Vector2Int position)
-        {
-            
-        }
-
-        private void OuterWalls()
+        void OuterWalls()
         {
             for (int i = 0; i < Console.WindowWidth; i++)
             {
