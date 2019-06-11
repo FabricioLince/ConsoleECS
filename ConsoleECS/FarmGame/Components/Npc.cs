@@ -13,7 +13,7 @@ namespace ConsoleECS.FarmGame.Components
     [Dependecies(typeof(Position), typeof(Collider), typeof(Holder))]
     class Npc : Script
     {
-        [AssignDependence] public Position Position { get; private set; } 
+        [AssignDependence] public Position Position { get; private set; }
         [AssignDependence] public Collider Collider { get; private set; }
         [AssignDependence] public Holder Holder { get; private set; }
 
@@ -65,9 +65,9 @@ namespace ConsoleECS.FarmGame.Components
             var dx = Position.Vector2Int.x - dest.x;
             var dy = Position.Vector2Int.y - dest.y;
 
-            if (dx == 0 || random.NextDouble() > 0.5) 
+            if (dx == 0 || random.NextDouble() > 0.5)
             {
-                if (dy == 0) 
+                if (dy == 0)
                 {
                 }
                 else if (dy < 0)
@@ -89,6 +89,10 @@ namespace ConsoleECS.FarmGame.Components
             }
 
             var colInFront = ComponentInFront<Collider>();
+            if (colInFront && colInFront.enabled)
+            {
+                Collider.Move(RandomDirection, speed * Engine.DeltaTime);
+            }
             Collider.Move(direction, speed * Engine.DeltaTime);
         }
         Component ComponentInFront<Component>() where Component : ComponentBase
@@ -101,6 +105,16 @@ namespace ConsoleECS.FarmGame.Components
             }
             return null;
         }
+
+        Vector2Int RandomDirection => 
+            new Vector2Int[]
+            {
+                Vector2Int.Down,
+                Vector2Int.Up,
+                Vector2Int.Left,
+                Vector2Int.Right
+            }
+            [random.Next(4)];
 
         enum TileKind
         {
