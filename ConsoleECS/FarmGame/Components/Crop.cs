@@ -1,4 +1,5 @@
 ﻿using ConsoleECS.Core.Components;
+using ConsoleECS.FarmGame.Components.GUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +15,15 @@ namespace ConsoleECS.FarmGame.Components
         [AssignDependence] Position position;
         [AssignDependence] Renderer renderer;
 
+        public Produce Produce { get; private set; }
+
         public Kind kind { get; set; }
         double timeToDieFromThirst = 10;
         double timeToGrow = 10;
 
         double timer = 5;
         int stage = 0;
-        public bool needsWater = true;
+        public bool NeedsWater { get; private set; } = true;
         public bool Dead { get; private set; } = false;
         char Symbol
         {
@@ -41,13 +44,17 @@ namespace ConsoleECS.FarmGame.Components
                 return '%';
             }
         }
-
+        public override void OnCreate()
+        {
+            base.OnCreate();
+            LogBox.Log(kind + " was planted on " + position);
+        }
 
         public void WaterCrop()
         {
-            if (!needsWater) return;
+            if (!NeedsWater) return;
 
-            needsWater = false;
+            NeedsWater = false;
             stage++;
             timer = timeToGrow;
         }
@@ -56,7 +63,7 @@ namespace ConsoleECS.FarmGame.Components
         {
             timer -= Engine.DeltaTime;
 
-            if(needsWater)
+            if(NeedsWater)
             {
                 if (timer > timeToDieFromThirst * 0.3) 
                     renderer.foregroundColor = ConsoleColor.Gray;
@@ -71,22 +78,38 @@ namespace ConsoleECS.FarmGame.Components
             else
             {
                 if (timer > timeToGrow * 0.3)
-                    renderer.foregroundColor = ConsoleColor.Green;
+                    renderer.foregroundColor = ConsoleColor.Cyan;
                 else
-                    renderer.foregroundColor = ConsoleColor.DarkGreen;
+                    renderer.foregroundColor = ConsoleColor.DarkCyan;
 
                 if (timer < 0)
                 {
                     stage++;
-                    needsWater = true;
+                    NeedsWater = true;
                     timer = timeToDieFromThirst;
                 }
             }
+
             renderer.symbol = Symbol;
-            if (stage == 6)
+
+            if (stage >= 6)
             {
-                EntityFactory.CreateProduce(position.Vector2Int, kind);
-                Engine.DestroyEntity(this.Entity);
+                NeedsWater = false;
+
+                if (Produce)
+                {
+                    if (Produce.HeldBy || Produce.Position.Vector2Int != position.Vector2Int)
+                    {
+                        Engine.DestroyEntity(this.Entity);
+                        Produce = null;
+                    }
+                }
+                else
+                {
+                    LogBox.Log(kind + " is ready to harvest");
+                    var ent = EntityFactory.CreateProduce(position.Vector2Int, kind);
+                    Produce = ent.GetComponent<Produce>();
+                }
             }
 
             if(Dead)
@@ -95,8 +118,6 @@ namespace ConsoleECS.FarmGame.Components
                 renderer.foregroundColor = ConsoleColor.DarkYellow;
             }
         }
-
-
 
         public enum Kind
         {

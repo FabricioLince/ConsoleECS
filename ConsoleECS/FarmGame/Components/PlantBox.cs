@@ -8,29 +8,30 @@ namespace ConsoleECS.FarmGame.Components
     class PlantBox : Script
     {
         [AssignDependence] public Position Position { get; private set; }
-        public Crop crop;
-        public bool HasCrop => crop != null;
+        public Crop Crop { get; private set; }
+        public Produce Produce => Crop?.Produce;
+        public bool HasCrop => Crop;
+        public bool HasProduce => Produce;
 
-        public bool Empty => !HasCrop;
+        public bool Empty => !HasCrop && !HasProduce;
 
         public bool Plant(Seed seed)
         {
             if (HasCrop) return false;
             var ent = EntityFactory.CreateCrop(Position.Vector2Int, seed.kind);
-            crop = ent.GetComponent<Crop>();
+            Crop = ent.GetComponent<Crop>();
             return true;
         }
         public bool RemoveCrop()
         {
             if (!HasCrop) return false;
-            Engine.DestroyEntity(crop.Entity);
-            crop = null;
+            Engine.DestroyEntity(Crop.Entity);
+            Crop = null;
             return true;
         }
 
         public override void Loop()
         {
-            
         }
 
         public override void OnCreate()

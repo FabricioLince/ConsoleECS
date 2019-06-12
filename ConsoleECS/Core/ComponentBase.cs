@@ -71,19 +71,17 @@ namespace ConsoleECS.Core
         }
         protected void AssignDepenciesValuesOnFields()
         {
-            //Console.WriteLine(this.GetType().Name);
             var type = GetType();
             while (type != null)
             {
+                //Console.WriteLine(type.Name);
                 var fields = type.GetFields( BindingFlags.SetProperty| BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 foreach (var field in fields)
                 {
-                    //Console.WriteLine("\t" + field.FieldType + " " + field.Name);
-
                     var att = field.GetCustomAttribute<AssignDependenceAttribute>();
                     if (att != null)
                     {
-                        //Console.WriteLine("\t" + att);
+                        //Console.WriteLine("\t" + field.FieldType + " " + field.Name);
                         //if (dependencies.ContainsKey(field.FieldType))
                         {
                             var value = dependencies[field.FieldType];
@@ -93,18 +91,16 @@ namespace ConsoleECS.Core
                         //else throw new Exception(field.FieldType + " not found in dependencies of " + type.FullName);
                     }
                 }
-                var properties = type.GetProperties(BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var properties = type.GetProperties(BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
                 foreach (var prop in properties)
                 {
-                    //Console.WriteLine("\t" + field.FieldType + " " + field.Name);
-
                     var att = prop.GetCustomAttribute<AssignDependenceAttribute>();
                     if (att != null)
                     {
-                        //Console.WriteLine("\t" + att);
+                        //Console.WriteLine("\t" + prop.PropertyType + " " + prop.Name);
                         //if (dependencies.ContainsKey(field.FieldType))
                         {
-                            var value = dependencies[prop.PropertyType];
+                            var value = Entity.GetComponent(prop.PropertyType);// dependencies[prop.PropertyType];
                             prop.SetValue(this, value);
                             //Console.WriteLine(value.Equals(field.GetValue(this)));
                         }

@@ -20,13 +20,16 @@ namespace ConsoleECS.FarmGame.Components
                 holding = item;
             }
         }
-        public void DropItemOn(Vector2Int position)
+        public bool DropItemOn(Vector2Int position)
         {
             if (holding)
             {
-                holding.DropOn(position);
-                holding = null;
+                if (holding.DropOn(position))
+                {
+                    holding = null;
+                }
             }
+            return !holding;
         }
 
         public override void Loop()

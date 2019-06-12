@@ -33,7 +33,6 @@ namespace ConsoleECS.FarmGame
                 Console.Error.WriteLine(e.Message);
                 Console.Error.WriteLine(e.StackTrace);
                 Console.ReadLine();
-                throw;
             }
             
         }

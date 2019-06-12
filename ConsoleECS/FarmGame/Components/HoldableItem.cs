@@ -5,27 +5,22 @@ using System;
 
 namespace ConsoleECS.FarmGame.Components
 {
-    /*
-    public interface IHoldable
-    {
-        Entity HeldBy { get; set; }
-        void DropOn(Vector2Int position);
-        void PickUp(Entity entity);
-    }*/
-
     [Dependecies(typeof(Position), typeof(Collider))]
     public abstract class HoldableItem : Script
     {
-        [AssignDependence] readonly Position position;
-        [AssignDependence] Collider collider;
+        [AssignDependence] public Position Position { get; set; }
+        [AssignDependence] public Collider Collider { get; set; }
+
         Position holderPosition;
 
         public Entity HeldBy { get; set; }
-        public void DropOn(Vector2Int local)
+        public bool DropOn(Vector2Int local)
         {
+            if (Collider.system.CheckCollision(local)) return false;
             HeldBy = null;
-            position.Vector2Int = local;
-            collider.enabled = true;
+            Position.Vector2Int = local;
+            Collider.enabled = true;
+            return true;
         }
         public void PickUp(Entity p)
         {
@@ -36,7 +31,7 @@ namespace ConsoleECS.FarmGame.Components
                 HeldBy = null;
                 return;
             }
-            collider.enabled = false;
+            Collider.enabled = false;
         }
         public void PickUp(ComponentBase c)
         {
@@ -47,7 +42,7 @@ namespace ConsoleECS.FarmGame.Components
         {
             if (HeldBy)
             {
-                position.Vector2Int = holderPosition.Vector2Int + Vector2Int.Up;
+                Position.Vector2Int = holderPosition.Vector2Int + Vector2Int.Up;
             }
         }
     }

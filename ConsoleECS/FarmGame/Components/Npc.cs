@@ -16,10 +16,13 @@ namespace ConsoleECS.FarmGame.Components
         [AssignDependence] public Position Position { get; private set; }
         [AssignDependence] public Collider Collider { get; private set; }
         [AssignDependence] public Holder Holder { get; private set; }
+        [AssignDependence] public Renderer Renderer { get; private set; }
 
         public Vector2Int direction = Vector2Int.Up;
         public double speed = 10;
         //Dictionary<Vector2Int, TileKind> MentalMap = new Dictionary<Vector2Int, TileKind>();
+
+        Vector2Int Front => Position.Vector2Int + direction;
 
         Random random = new Random();
 
@@ -27,25 +30,55 @@ namespace ConsoleECS.FarmGame.Components
         {
             if (Holder.holding)
             {
-                var pBox = ComponentInFront<PlantBox>();
-                if (pBox && pBox.Empty)
+                Renderer.symbol = 'h';
+                if (Holder.holding is Seed)
                 {
-                    pBox.Plant(Holder.holding as Seed);
-                    Engine.DestroyEntity(Holder.holding.Entity);
-                }
-                else
-                {
-                    var destPlantBox = PlantBox.List.Find(pb => pb.Empty);
-                    if (destPlantBox)
+                    var pBox = ComponentInFront<PlantBox>();
+                    if (pBox && pBox.Empty)
                     {
-                        MoveTo(destPlantBox.Position);
+                        pBox.Plant(Holder.holding as Seed);
+                        Engine.DestroyEntity(Holder.holding.Entity);
                     }
+                    else
+                    {
+                        var destPlantBox = PlantBox.List.Find(pb => pb.Empty);
+                        if (destPlantBox)
+                        {
+                            MoveTo(destPlantBox.Position);
+                        }
+                        else
+                        {
+                            if (!Holder.DropItemOn(Front))
+                            {
+                                Collider.Move(RandomDirection, speed * Engine.DeltaTime);
+                            }
+                        }
+                    }
+                }
+                else if(Holder.holding is Produce)
+                {
+                    MoveTo(Vector2Int.One);
                 }
             }
             else
             {
-                if (PlantBox.List.Find(pb => pb.Empty))
+                var needsWater = PlantBox.List.Find(pb => pb.Crop && pb.Crop.NeedsWater);
+                if (needsWater)
                 {
+                    Renderer.symbol = 'r';
+                    var pbInFront = ComponentInFront<PlantBox>();
+                    if (pbInFront && pbInFront.Crop && pbInFront.Crop.NeedsWater) 
+                    {
+                        pbInFront.Crop.WaterCrop();
+                    }
+                    else
+                    {
+                        MoveTo(needsWater.Position);
+                    }
+                }
+                else if (PlantBox.List.Find(pb => pb.Empty))
+                {
+                    Renderer.symbol = 'p';
                     var destSeedBox = SeedBox.List[random.Next(SeedBox.List.Count)];
                     var seedInFront = ComponentInFront<Seed>();
                     if (seedInFront)
@@ -55,6 +88,22 @@ namespace ConsoleECS.FarmGame.Components
                     else
                     {
                         MoveTo(destSeedBox.Position);
+                    }
+                }
+                else
+                {
+                    var produceReady = PlantBox.List.Find(pb => pb.HasProduce);
+                    if(produceReady)
+                    {
+                        var produceInFront = ComponentInFront<Produce>();
+                        if (produceInFront)
+                        {
+                            Holder.PickItem(produceInFront);
+                        }
+                        else
+                        {
+                            MoveTo(produceReady.Position);
+                        }
                     }
                 }
             }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ConsoleECS.Core.Systems
 {
-    class ColliderSystem : ComponentSystem<Collider>
+    public class ColliderSystem : ComponentSystem<Collider>
     {
         public Dictionary<int, Dictionary<int, bool>> layerCollisions = new Dictionary<int, Dictionary<int, bool>>();
         private Engine engine;
@@ -24,19 +24,19 @@ namespace ConsoleECS.Core.Systems
 
         public bool CheckCollision(Vector2Int position, int layerId = 0)
         {
-            return components.Find(c => c.enabled && c.position.Vector2Int.Equals(position)) != null;
+            return components.Find(c => c.enabled && c.Position.Vector2Int.Equals(position)) != null;
         }
         public bool CanMoveTo(Collider collider, Vector2Int position)
         {
             // TODO check layer
             if (!collider.enabled) return true;
-            var obstacle = components.Find(c => c.enabled && c.position.Vector2Int.Equals(position));
+            var obstacle = components.Find(c => c.enabled && c.Position.Vector2Int.Equals(position));
             return (obstacle == null || obstacle == collider);
         }
 
         public bool CheckCollision(Collider c1, Collider c2)
         {
-            return c1.position.Equals(c2.position);
+            return c1.Position.Equals(c2.Position);
         }
 
         public void SetCollisionForLayer(int layerA, int layerB, bool collide)

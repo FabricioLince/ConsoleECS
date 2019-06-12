@@ -73,6 +73,7 @@
     <Compile Include="Core\Vector\Vector2.cs" />
     <Compile Include="Core\Vector\Vector2Int.cs" />
     <Compile Include="FarmGame\Components\Crop.cs" />
+    <Compile Include="FarmGame\Components\GUI\LogBox.cs" />
     <Compile Include="FarmGame\Components\HoldableItem.cs" />
     <Compile Include="FarmGame\Components\Holder.cs" />
     <Compile Include="FarmGame\Components\Npc.cs" />

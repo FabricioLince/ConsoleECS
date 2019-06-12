@@ -78,7 +78,7 @@ namespace ConsoleECS.FarmGame.Components
                     var crop = p.Entity.GetComponent<Crop>();
                     if (crop)
                     {
-                        if (crop.needsWater)
+                        if (crop.NeedsWater)
                         {
                             crop.WaterCrop();
                             PlayImmediatly(Sound.Parse("E:1, F:1, F#:2"));

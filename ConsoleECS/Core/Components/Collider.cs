@@ -4,11 +4,10 @@ using ConsoleECS.Core.Vector;
 namespace ConsoleECS.Core.Components
 {
     [Dependecies(typeof(Position))]
-    class Collider : ComponentBase
+    public class Collider : ComponentBase
     {
 #pragma warning disable 649, 169
-        [AssignDependence]
-        public Position position;
+        [AssignDependence] public Position Position { get; private set; }
 #pragma warning restore 649, 169
 
         public int layerId = 0;
@@ -24,10 +23,10 @@ namespace ConsoleECS.Core.Components
                 if (distance > 0.5)
                 {
                     distance -= 0.5;
-                    var destino = position.Vector2 + direction * 0.5;
+                    var destino = Position.Vector2 + direction * 0.5;
                     if (system.CanMoveTo(this, destino))
                     {
-                        position.Vector2 = destino;
+                        Position.Vector2 = destino;
                     }
                     else
                     {
@@ -36,16 +35,21 @@ namespace ConsoleECS.Core.Components
                 }
                 else
                 {
-                    var destino = position.Vector2 + direction * distance;
+                    var destino = Position.Vector2 + direction * distance;
                     if (!system.CanMoveTo(this, destino))
                     {
                         return false;
                     }
-                    position.Vector2 = destino;
+                    Position.Vector2 = destino;
                     return true;
                 }
             }
             return true;
+        }
+
+        public bool CanMoveTo(Vector2Int position)
+        {
+            return system.CanMoveTo(this, position);
         }
     }
 }

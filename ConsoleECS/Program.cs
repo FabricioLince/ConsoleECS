@@ -74,29 +74,29 @@ namespace ConsoleECS
             return piece;
         }
 
-        Entity CreateMessageBox(string message)
+        public static Entity CreateMessageBox(Engine engine, string message)
         {
             var guiEntity = engine.CreateEntity();
             guiEntity.Name = "guiEntity";
             var frame = guiEntity.AddComponent<Frame>();
-            frame.position = new Vector2Int(1, engine.Screen.WindowHeight - 8);
-            frame.Size = new Vector2Int(engine.Screen.WindowWidth - 3, 6);
+            frame.position = new Vector2Int(1, engine.Screen.WindowHeight - 6);
+            frame.Size = new Vector2Int(engine.Screen.WindowWidth - 3, 4);
             frame.foregroundColor = ConsoleColor.DarkMagenta;
             frame.backgroundColor = ConsoleColor.Gray;
             frame.line = Frame.LineKind.Single;
 
             var text = guiEntity.AddComponent<Text>();
-            text.position = new Vector2Int(2, engine.Screen.WindowHeight - 8 + 1);
+            text.position = new Vector2Int(2, engine.Screen.WindowHeight - 6 + 1);
             text.text = message;
             text.foregroundColor = ConsoleColor.DarkRed;
             text.backgroundColor = frame.backgroundColor;
-
+            /*
             text = guiEntity.AddComponent<Text>();
             text.position = frame.position + frame.Size - new Vector2Int(1, 1);
             text.text = "X";
             text.foregroundColor = ConsoleColor.Black;
             text.backgroundColor = frame.backgroundColor;
-
+            
             var scr = guiEntity.AddComponent<DelegateScript>();
             scr.LoopFunction = (script) =>
             {
@@ -114,6 +114,7 @@ namespace ConsoleECS
                     text.text = "X";
                 }
             };
+            */
             return guiEntity;
         }
 
