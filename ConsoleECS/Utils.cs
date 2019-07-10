@@ -101,6 +101,20 @@ namespace ConsoleECS
 
             return rt;
         }
+
+        public static int Count(this string str, string piece)
+        {
+            int count = 0;
+            for (int i = 0; i < str.Length - piece.Length+1; i++)
+            {
+                //Console.WriteLine("comparing " + str.Substring(i, piece.Length));
+                if(str.Substring(i, piece.Length).Equals(piece))
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
     }
     /*
     public static class SizePointUtils

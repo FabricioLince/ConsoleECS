@@ -127,7 +127,7 @@ namespace ConsoleECS
 
             var testCases = new string[]
             {
-                "-(1*2)",
+                "-(3*2)",
                 "2(5+1)",
                 "-2(5+1)",
                 "(4*(2+7))+(2*3)",
@@ -152,9 +152,9 @@ namespace ConsoleECS
                     {
                         Console.WriteLine(var + " = " + value);
                     }
-                    else
+                    else if (ExpressionInterpreter.Run(line, out float result))
                     {
-                        Console.WriteLine(">" + ExpressionInterpreter.Run(line));
+                        Console.WriteLine("= " + result);
                     }
                 }
             }
@@ -163,17 +163,34 @@ namespace ConsoleECS
 
     public class ExpressionInterpreter
     {
-        const string Number = @"\s*-?[0-9]+\s*";
+        const string Number = @"\s*(?:\-|\+)?[0-9]+\s*";
         const string LeftHand = @"\s*(?<lh>" + Number + @")\s*";
         const string RightHand = @"\s*(?<rh>" + Number + @")\s*";
 
+        enum Parenteses
+        {
+            None = 0,
+            Left = 1,
+            Right = 2,
+            Both = 3
+        }
         public static float Run(string input)
         {
-            if (MatchExpression(input, out string result))
+            if (MatchExpression(input, out string r))
             {
-                return float.Parse(result);
+                if (float.TryParse(r, out float f))
+                {
+                    return f;
+                }
             }
-            return 0.0f;
+            return 0;
+        }
+        public static bool Run(string input, out float result)
+        {
+            result = 0;
+            return 
+                MatchExpression(input, out string resultString) &&
+                float.TryParse(resultString, out result);
         }
 
         public static bool MatchExpression(string line, out string result)
@@ -183,33 +200,39 @@ namespace ConsoleECS
 
             while (result.Contains("("))
             {
-                done |= MatchOperation(result, out result, @"\*|/", true);
+                if (result.Count("(") != result.Count(")")) return false;
+
+                done |= MatchOperation(result, out result, @"\*|/", Parenteses.Both);
                 //Console.WriteLine(result);
-                done |= MatchOperation(result, out result, @"\+|\-", true);
+                done |= MatchOperation(result, out result, @"\+|\-", Parenteses.Both);
                 //Console.WriteLine(result);
                 done |= MatchSingleValue(result, out result);
                 //Console.WriteLine(result);
             }
-            Console.WriteLine(result);
-            done |= MatchOperation(result, out result, @"\*|/", false);
+            //Console.WriteLine(">"+result);
+            done |= MatchOperation(result, out result, @"\*|/");
             //Console.WriteLine(result);
-            done |= MatchOperation(result, out result, @"\+|\-", false);
+            done |= MatchOperation(result, out result, @"\+|\-");
             //Console.WriteLine(result);
             done |= MatchSingleValue(result, out result);
             //Console.WriteLine(result);
             return done;
         }
 
-        static bool MatchOperation(string input, out string result, string op, bool parenteses)
+        static bool MatchOperation(string input, out string result, string op, Parenteses parenteses = Parenteses.None)
         {
             Expand(input, out result);
 
             //Console.WriteLine("Matching " + op);
             string opPattern = @"(?<op>" + op + @")";
             string pattern = LeftHand + opPattern + RightHand;
-            if (parenteses)
+            if ((parenteses & Parenteses.Left) == Parenteses.Left)
             {
-                pattern = @"\s*\(" + pattern + @"\)\s*";
+                pattern = @"\s*\(" + pattern;
+            }
+            if ((parenteses & Parenteses.Right) == Parenteses.Right)
+            {
+                pattern = pattern + @"\)\s*";
             }
             Regex regex = new Regex(pattern);
             //Console.WriteLine(pattern);
@@ -218,17 +241,19 @@ namespace ConsoleECS
 
             if (!match.Success)
             {
-                if (parenteses)
-                    return MatchOperation(result, out result, op, false);
+                if (parenteses == Parenteses.Both)
+                    return MatchOperation(result, out result, op, Parenteses.Left);
                 return false;
             }
 
             while (match.Success)
             {
                 //Console.WriteLine(":" + PrintMatch(match));
-
-                result = regex.Replace(result, ExpressionEvaluator);
-                Console.WriteLine(result); // Print each resolution step
+                if(parenteses == Parenteses.Left)
+                    result = regex.Replace(result, m => "(" + ExpressionEvaluator(m));
+                else
+                    result = regex.Replace(result, ExpressionEvaluator);
+                //Console.WriteLine(result); // Print each resolution step
 
                 match = regex.Match(result);
             }
@@ -355,7 +380,5 @@ namespace ConsoleECS
             }
             Console.ReadKey(true);
         }
-
-
     }
 }
