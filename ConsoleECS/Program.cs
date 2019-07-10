@@ -132,6 +132,7 @@ namespace ConsoleECS
                 "-2(5+1)",
                 "(4*(2+7))+(2*3)",
                 "(4*(2+5+2))+(2*3)",
+                "(4*(-2-3-2-2))-(2*3)",
             };
             foreach (var testCase in testCases)
             {
@@ -189,6 +190,7 @@ namespace ConsoleECS
                 done |= MatchSingleValue(result, out result);
                 //Console.WriteLine(result);
             }
+            Console.WriteLine(result);
             done |= MatchOperation(result, out result, @"\*|/", false);
             //Console.WriteLine(result);
             done |= MatchOperation(result, out result, @"\+|\-", false);
