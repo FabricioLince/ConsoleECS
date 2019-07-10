@@ -125,6 +125,22 @@ namespace ConsoleECS
             //new Program().Run();
             //new Interpreter().Run();
 
+            var testCases = new string[]
+            {
+                "-(1*2)",
+                "2(5+1)",
+                "-2(5+1)",
+                "(4*(2+7))+(2*3)",
+                "(4*(2+5+2))+(2*3)",
+            };
+            foreach (var testCase in testCases)
+            {
+                Console.WriteLine("Testing " + testCase);
+                ExpressionInterpreter.Expand(testCase, out string result);
+                //Console.WriteLine(":" + result);
+                Console.WriteLine(ExpressionInterpreter.Run(testCase));
+            }
+
             while (true)
             {
                 string line = Console.ReadLine();
@@ -146,6 +162,10 @@ namespace ConsoleECS
 
     public class ExpressionInterpreter
     {
+        const string Number = @"\s*-?[0-9]+\s*";
+        const string LeftHand = @"\s*(?<lh>" + Number + @")\s*";
+        const string RightHand = @"\s*(?<rh>" + Number + @")\s*";
+
         public static float Run(string input)
         {
             if (MatchExpression(input, out string result))
@@ -157,53 +177,107 @@ namespace ConsoleECS
 
         public static bool MatchExpression(string line, out string result)
         {
-            var done = MatchOperation(line, out result, @"\*|/", true);
-            Console.WriteLine(result);
-            done |= MatchOperation(result, out result, @"\+|\-", true);
-            Console.WriteLine(result);
+            var done = false;
+            result = line;
+
+            while (result.Contains("("))
+            {
+                done |= MatchOperation(result, out result, @"\*|/", true);
+                //Console.WriteLine(result);
+                done |= MatchOperation(result, out result, @"\+|\-", true);
+                //Console.WriteLine(result);
+                done |= MatchSingleValue(result, out result);
+                //Console.WriteLine(result);
+            }
             done |= MatchOperation(result, out result, @"\*|/", false);
-            Console.WriteLine(result);
+            //Console.WriteLine(result);
             done |= MatchOperation(result, out result, @"\+|\-", false);
-            Console.WriteLine(result);
+            //Console.WriteLine(result);
             done |= MatchSingleValue(result, out result);
-            Console.WriteLine(result);
+            //Console.WriteLine(result);
             return done;
         }
 
-        static bool MatchOperation(string line, out string result, string op, bool parenteses)
+        static bool MatchOperation(string input, out string result, string op, bool parenteses)
         {
-            string pattern = @"\s*(?<lh>-?[0-9]+)\s*(?<op>" + op + @")\s*(?<rh>-?[0-9]+)";
+            Expand(input, out result);
+
+            //Console.WriteLine("Matching " + op);
+            string opPattern = @"(?<op>" + op + @")";
+            string pattern = LeftHand + opPattern + RightHand;
             if (parenteses)
             {
-                pattern = @"\s*\(\s*" + pattern + @"\s*\)\s*";
+                pattern = @"\s*\(" + pattern + @"\)\s*";
             }
             Regex regex = new Regex(pattern);
             //Console.WriteLine(pattern);
-            result = line;
-            var match = regex.Match(line);
 
-            if (!match.Success) return false;
+            var match = regex.Match(result);
+
+            if (!match.Success)
+            {
+                if (parenteses)
+                    return MatchOperation(result, out result, op, false);
+                return false;
+            }
 
             while (match.Success)
             {
                 //Console.WriteLine(":" + PrintMatch(match));
 
                 result = regex.Replace(result, ExpressionEvaluator);
+                Console.WriteLine(result); // Print each resolution step
 
                 match = regex.Match(result);
             }
             return true;
         }
 
-        static bool MatchSingleValue(string line, out string result)
+        static bool MatchSingleValue(string input, out string result)
         {
-            Regex regex = new Regex(@"\s*(?<lh>-?[0-9]+)\s*");
-            var match = regex.Match(line);
-            result = line;
-            if (!match.Success) return false;
+            Expand(input, out result);
 
-            result = match.Groups["lh"].Value;
+            Regex regex = new Regex(LeftHand);
+            var match = regex.Match(result);
+
+            if (match.Success)
+            {
+                //result = match.Groups["lh"].Value;
+                result = regex.Replace(result, m => m.Groups["lh"].Value);
+            }
+
+            regex = new Regex(@"\s*\(" + LeftHand + @"\)\s*");
+            match = regex.Match(result);
+            while (match.Success)
+            {
+                result = regex.Replace(result, m => m.Groups["lh"].Value);
+
+                match = regex.Match(result);
+            }
+
             return true;
+        }
+
+        public static void Expand(string input, out string result)
+        {
+            result = input;
+
+            Regex regex = new Regex(@"\s*\-\s*\(");
+            var match = regex.Match(result);
+
+            if (match.Success)
+            {
+                result = regex.Replace(result, "-1*(");
+                return;
+            }
+
+            regex = new Regex(LeftHand + @"\(");
+            match = regex.Match(result);
+            if (match.Success)
+            {
+                result = regex.Replace(result, m => m.Groups["lh"].Value + "*(");
+                return;
+            }
         }
 
         static string ExpressionEvaluator(Match match)
@@ -269,7 +343,7 @@ namespace ConsoleECS
         {
             using (StreamReader reader = new StreamReader("code.txt"))
             {
-                while(!reader.EndOfStream)
+                while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
                     ExpressionInterpreter.MatchExpression(line, out string result);
@@ -280,6 +354,6 @@ namespace ConsoleECS
             Console.ReadKey(true);
         }
 
-        
+
     }
 }
