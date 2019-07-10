@@ -145,7 +145,7 @@ namespace ConsoleECS
             Dictionary<string, float> memory = new Dictionary<string, float>();
             ExpressionInterpreter.EvaluateIdentifierFunction = (name) =>
             {
-                //Console.WriteLine("Evaluating " + name);
+                Console.WriteLine("Evaluating " + name);
                 if (memory.ContainsKey(name)) return memory[name];
                 return null;
             };
@@ -178,9 +178,11 @@ namespace ConsoleECS
     {
         const string Name = @"\s*[a-z]+(?:[a-z]|[0-9])*\s*";
         const string Identifier = @"(?<id>" + Name + @")";
+        const string Parameter = Name + "|" + Number;
+        const string Function = Identifier + @"\((" + Parameter + @")*\)\s*";
         const string Number = @"\s*(?:\-|\+)?[0-9]+(?:\,[0-9]+)?\s*";
         const string Value = @"\s*(?<val>" + Number + @")\s*";
-        const string LeftHand = @"\s*(?<lh>" + Number + "|" + Name + @")\s*";
+        const string LeftHand = @"\s*(?<lh>" + Number + "|" + Name + "|" + Function + @")\s*";
         const string RightHand = @"\s*(?<rh>" + Number + "|" + Name + @")\s*";
 
         public static Func<string, float?> EvaluateIdentifierFunction;
@@ -272,6 +274,7 @@ namespace ConsoleECS
                     result = regex.Replace(result, m => "(" + ExpressionEvaluator(m));
                 else
                     result = regex.Replace(result, ExpressionEvaluator);
+
                 Console.WriteLine(result); // Print each resolution step
 
                 match = regex.Match(result);
@@ -316,11 +319,12 @@ namespace ConsoleECS
                 //return;
             }
 
-            regex = new Regex(LeftHand + @"\(");
+            regex = new Regex(Value + @"\(");
             match = regex.Match(result);
             if (match.Success)
             {
-                result = regex.Replace(result, m => m.Groups["lh"].Value + "*(");
+                result = regex.Replace(result, m => m.Groups["val"].Value + "*(");
+                //Console.WriteLine("Caiu aqui: "+result);
                 //return;
             }
 
