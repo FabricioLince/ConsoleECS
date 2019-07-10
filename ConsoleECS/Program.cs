@@ -133,14 +133,22 @@ namespace ConsoleECS
                 "(4*(2+7))+(2*3)",
                 "(4*(2+5+2))+(2*3)",
                 "(4*(-2-3-2-2))-(2*3)",
+                "2a+3a*(a*-a)-a",
             };
             foreach (var testCase in testCases)
             {
                 Console.WriteLine("Testing " + testCase);
                 ExpressionInterpreter.Expand(testCase, out string result);
-                //Console.WriteLine(":" + result);
+                Console.WriteLine("expanded: " + result);
                 Console.WriteLine(ExpressionInterpreter.Run(testCase));
             }
+            Dictionary<string, float> memory = new Dictionary<string, float>();
+            ExpressionInterpreter.EvaluateIdentifierFunction = (name) =>
+            {
+                //Console.WriteLine("Evaluating " + name);
+                if (memory.ContainsKey(name)) return memory[name];
+                return null;
+            };
 
             while (true)
             {
@@ -151,10 +159,15 @@ namespace ConsoleECS
                     if (AttribuitionInterpreter.Match(line, out string var, out float value))
                     {
                         Console.WriteLine(var + " = " + value);
+                        memory[var] = value;
                     }
                     else if (ExpressionInterpreter.Run(line, out float result))
                     {
                         Console.WriteLine("= " + result);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Couldn't parse command");
                     }
                 }
             }
@@ -163,9 +176,14 @@ namespace ConsoleECS
 
     public class ExpressionInterpreter
     {
-        const string Number = @"\s*(?:\-|\+)?[0-9]+\s*";
-        const string LeftHand = @"\s*(?<lh>" + Number + @")\s*";
-        const string RightHand = @"\s*(?<rh>" + Number + @")\s*";
+        const string Name = @"\s*[a-z]+(?:[a-z]|[0-9])*\s*";
+        const string Identifier = @"(?<id>" + Name + @")";
+        const string Number = @"\s*(?:\-|\+)?[0-9]+(?:\,[0-9]+)?\s*";
+        const string Value = @"\s*(?<val>" + Number + @")\s*";
+        const string LeftHand = @"\s*(?<lh>" + Number + "|" + Name + @")\s*";
+        const string RightHand = @"\s*(?<rh>" + Number + "|" + Name + @")\s*";
+
+        public static Func<string, float?> EvaluateIdentifierFunction;
 
         enum Parenteses
         {
@@ -188,7 +206,7 @@ namespace ConsoleECS
         public static bool Run(string input, out float result)
         {
             result = 0;
-            return 
+            return
                 MatchExpression(input, out string resultString) &&
                 float.TryParse(resultString, out result);
         }
@@ -241,6 +259,7 @@ namespace ConsoleECS
 
             if (!match.Success)
             {
+                // if we're looking for both parenteses, try and find just the left one
                 if (parenteses == Parenteses.Both)
                     return MatchOperation(result, out result, op, Parenteses.Left);
                 return false;
@@ -249,11 +268,11 @@ namespace ConsoleECS
             while (match.Success)
             {
                 //Console.WriteLine(":" + PrintMatch(match));
-                if(parenteses == Parenteses.Left)
+                if (parenteses == Parenteses.Left)
                     result = regex.Replace(result, m => "(" + ExpressionEvaluator(m));
                 else
                     result = regex.Replace(result, ExpressionEvaluator);
-                //Console.WriteLine(result); // Print each resolution step
+                Console.WriteLine(result); // Print each resolution step
 
                 match = regex.Match(result);
             }
@@ -264,24 +283,23 @@ namespace ConsoleECS
         {
             Expand(input, out result);
 
-            Regex regex = new Regex(LeftHand);
+            Regex regex = new Regex(@"^" + LeftHand);
             var match = regex.Match(result);
 
             if (match.Success)
             {
-                //result = match.Groups["lh"].Value;
-                result = regex.Replace(result, m => m.Groups["lh"].Value);
+                result = regex.Replace(result, m => EvaluateSingle(m.Groups["lh"].Value).ToString());
             }
 
             regex = new Regex(@"\s*\(" + LeftHand + @"\)\s*");
             match = regex.Match(result);
             while (match.Success)
             {
-                result = regex.Replace(result, m => m.Groups["lh"].Value);
+                result = regex.Replace(result, m => EvaluateSingle(m.Groups["lh"].Value).ToString());
 
                 match = regex.Match(result);
             }
-
+        
             return true;
         }
 
@@ -295,7 +313,7 @@ namespace ConsoleECS
             if (match.Success)
             {
                 result = regex.Replace(result, "-1*(");
-                return;
+                //return;
             }
 
             regex = new Regex(LeftHand + @"\(");
@@ -303,16 +321,42 @@ namespace ConsoleECS
             if (match.Success)
             {
                 result = regex.Replace(result, m => m.Groups["lh"].Value + "*(");
-                return;
+                //return;
+            }
+
+            regex = new Regex(@"\s*\-\s*" + Identifier);
+            match = regex.Match(input);
+            if (match.Success)
+            {
+                result = regex.Replace(result, m => "-1*" + m.Groups["id"].Value);
+                //return;
+            }
+
+            regex = new Regex(Value + Identifier);
+            match = regex.Match(input);
+            if (match.Success)
+            {
+                result = regex.Replace(result, m =>
+                {
+                    string lh = m.Groups["val"].Value;
+                    if (EvaluateSingle(lh) >= 0) lh = "+" + lh;
+                    return lh + "*" + m.Groups["id"].Value;
+                });
+                //return;
             }
         }
 
         static string ExpressionEvaluator(Match match)
         {
-            float.TryParse(match.Groups["lh"].Value, out float lh);
-            float.TryParse(match.Groups["rh"].Value, out float rh);
-            float resultValue = 0;
+            var lhName = match.Groups["lh"].Value;
+            var rhName = match.Groups["rh"].Value;
 
+            if (!EvaluateSingle(lhName, out float lh)) return "null";
+
+            if (!EvaluateSingle(rhName, out float rh)) return "null";
+
+            float resultValue = 0;
+        
             switch (match.Groups["op"].Value)
             {
                 case "*":
@@ -331,6 +375,27 @@ namespace ConsoleECS
 
             return resultValue.ToString();
         }
+        static float? EvaluateSingle(string input)
+        {
+            if (EvaluateSingle(input, out float value)) return value;
+            return null;
+        }
+        static bool EvaluateSingle(string input, out float value)
+        {
+            if (!float.TryParse(input, out value))
+            {
+                if (EvaluateIdentifierFunction == null) return false;
+
+                var temp = EvaluateIdentifierFunction(input);
+                if (temp == null)
+                {
+                    Console.WriteLine(input + " is not defined");
+                    return false;
+                }
+                value = temp ?? 0;
+            }
+            return true;
+        }
 
         static string PrintMatch(Match match)
         {
@@ -344,7 +409,7 @@ namespace ConsoleECS
     {
         public static bool Match(string line, out string varName, out float varValue)
         {
-            Regex regex = new Regex(@"\s*(?<var>[a-z]+)\s*=\s*");
+            Regex regex = new Regex(@"\s*(?<var>[a-z]+(?:[a-z]|[0-9])*)\s*=\s*");
             var match = regex.Match(line);
 
             varName = "";
@@ -355,7 +420,7 @@ namespace ConsoleECS
             varName = match.Groups["var"].Value;
 
             var expr = regex.Replace(line, "");
-            Console.WriteLine("Expr = " + expr);
+            //Console.WriteLine("Expr = " + expr);
             if (!ExpressionInterpreter.MatchExpression(expr, out string result)) return false;
 
             varValue = float.Parse(result);
