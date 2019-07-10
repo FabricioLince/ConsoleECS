@@ -34,6 +34,8 @@ namespace ConsoleECS.FarmGame.Scenes
         void PrepareSoil()
         {
             EntityFactory.CreateSoil(new Vector2Int(5, 5), new Vector2Int(8, 1));
+
+            EntityFactory.CreateSoil(new Vector2Int(5, 15), new Vector2Int(8, 1));
         }
 
         void OuterWalls()

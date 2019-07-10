@@ -26,6 +26,12 @@ namespace ConsoleECS.FarmGame.Components
 
         Random random = new Random();
 
+        public override void OnCreate()
+        {
+            base.OnCreate();
+            random = new Random(GetHashCode());
+        }
+
         public override void Loop()
         {
             if (Holder.holding)
@@ -57,7 +63,29 @@ namespace ConsoleECS.FarmGame.Components
                 }
                 else if(Holder.holding is Produce)
                 {
-                    MoveTo(Vector2Int.One);
+                    var dest = Vector2Int.One;
+                    while (!Collider.CanMoveTo(dest))
+                    {
+                        dest.x++;
+                        if (dest.x >= 20)
+                        {
+                            dest.x = 0;
+                            dest.y++;
+                            if (dest.y > 2)
+                            {
+                                dest = new Vector2Int(random.Next(), random.Next());
+                            }
+                        }
+                    }
+                    if (Front == dest)
+                    {
+                        Holder.DropItemOn(Front);
+                    }
+                    else
+                    {
+                        MoveTo(dest);
+                    }
+
                 }
             }
             else
