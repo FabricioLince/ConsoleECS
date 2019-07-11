@@ -120,10 +120,24 @@ namespace ConsoleECS
             return guiEntity;
         }
 
-        static void Main(string[] args)
+        static void Main()
         {
-            //new Program().Run();
-            //new Interpreter().Run();
+            Dictionary<string, float> memory = new Dictionary<string, float>();
+            ExpressionInterpreter.EvaluateIdentifier = (name) =>
+            {
+                Console.WriteLine("Evaluating " + name);
+                if (memory.ContainsKey(name)) return memory[name];
+                return null;
+            };
+            ExpressionInterpreter.EvaluateFunction = (name, args) =>
+            {
+                Console.WriteLine("Evaluating function " + name);
+                if (name.Equals("sin") && args.Count == 1)
+                {
+                    return (float)Math.Sin(args[0]);
+                }
+                return null;
+            };
 
             var testCases = new string[]
             {
@@ -134,21 +148,23 @@ namespace ConsoleECS
                 "(4*(2+5+2))+(2*3)",
                 "(4*(-2-3-2-2))-(2*3)",
                 "2a+3a*(a*-a)-a",
+                "sin(2)",
             };
             foreach (var testCase in testCases)
             {
                 Console.WriteLine("Testing " + testCase);
                 ExpressionInterpreter.Expand(testCase, out string result);
                 Console.WriteLine("expanded: " + result);
-                Console.WriteLine(ExpressionInterpreter.Run(testCase));
+                try
+                {
+                    Console.WriteLine(ExpressionInterpreter.Run(testCase));
+                }
+                catch (ExpressionInterpreter.VariableNotDefinedException v)
+                {
+                    Console.WriteLine(v.Message);
+                }
             }
-            Dictionary<string, float> memory = new Dictionary<string, float>();
-            ExpressionInterpreter.EvaluateIdentifierFunction = (name) =>
-            {
-                Console.WriteLine("Evaluating " + name);
-                if (memory.ContainsKey(name)) return memory[name];
-                return null;
-            };
+           
 
             while (true)
             {
@@ -165,6 +181,17 @@ namespace ConsoleECS
                     {
                         Console.WriteLine("= " + result);
                     }
+                    else if(line.ToLower().StartsWith("steps"))
+                    {
+                        if (line.ToLower().EndsWith("hide") || line.EndsWith("0"))
+                        {
+                            ExpressionInterpreter.ShowExpressionSteps = false;
+                        }
+                        else
+                        {
+                            ExpressionInterpreter.ShowExpressionSteps = true;
+                        }
+                    }
                     else
                     {
                         Console.WriteLine("Couldn't parse command");
@@ -178,14 +205,17 @@ namespace ConsoleECS
     {
         const string Name = @"\s*[a-z]+(?:[a-z]|[0-9])*\s*";
         const string Identifier = @"(?<id>" + Name + @")";
-        const string Parameter = Name + "|" + Number;
-        const string Function = Identifier + @"\((" + Parameter + @")*\)\s*";
+        const string Parameter = "(?<param>(?:" + Name + ")|(?:" + Number + "))";
+        const string Function = Identifier + @"\((?:" + Parameter + @"?(?:\s*\,\s*" + Parameter + @")*)?\)\s*";
         const string Number = @"\s*(?:\-|\+)?[0-9]+(?:\,[0-9]+)?\s*";
         const string Value = @"\s*(?<val>" + Number + @")\s*";
-        const string LeftHand = @"\s*(?<lh>" + Number + "|" + Name + "|" + Function + @")\s*";
+        const string LeftHand = @"\s*(?<lh>" + Number + "|" + Name + @")\s*";
         const string RightHand = @"\s*(?<rh>" + Number + "|" + Name + @")\s*";
 
-        public static Func<string, float?> EvaluateIdentifierFunction;
+        public static bool ShowExpressionSteps = false;
+
+        public static Func<string, float?> EvaluateIdentifier;
+        public static Func<string, List<float>, float?> EvaluateFunction;
 
         enum Parenteses
         {
@@ -208,9 +238,16 @@ namespace ConsoleECS
         public static bool Run(string input, out float result)
         {
             result = 0;
-            return
-                MatchExpression(input, out string resultString) &&
-                float.TryParse(resultString, out result);
+            try
+            {
+                return
+                    MatchExpression(input, out string resultString) &&
+                    float.TryParse(resultString, out result);
+            }
+            catch (VariableNotDefinedException)
+            {
+                return false;
+            }
         }
 
         public static bool MatchExpression(string line, out string result)
@@ -227,7 +264,7 @@ namespace ConsoleECS
                 done |= MatchOperation(result, out result, @"\+|\-", Parenteses.Both);
                 //Console.WriteLine(result);
                 done |= MatchSingleValue(result, out result);
-                //Console.WriteLine(result);
+                Console.WriteLine(result);
             }
             //Console.WriteLine(">"+result);
             done |= MatchOperation(result, out result, @"\*|/");
@@ -275,7 +312,8 @@ namespace ConsoleECS
                 else
                     result = regex.Replace(result, ExpressionEvaluator);
 
-                Console.WriteLine(result); // Print each resolution step
+                if (ShowExpressionSteps)
+                    Console.WriteLine(result); // Print each resolution step
 
                 match = regex.Match(result);
             }
@@ -302,7 +340,7 @@ namespace ConsoleECS
 
                 match = regex.Match(result);
             }
-        
+
             return true;
         }
 
@@ -329,7 +367,7 @@ namespace ConsoleECS
             }
 
             regex = new Regex(@"\s*\-\s*" + Identifier);
-            match = regex.Match(input);
+            match = regex.Match(result);
             if (match.Success)
             {
                 result = regex.Replace(result, m => "-1*" + m.Groups["id"].Value);
@@ -337,7 +375,7 @@ namespace ConsoleECS
             }
 
             regex = new Regex(Value + Identifier);
-            match = regex.Match(input);
+            match = regex.Match(result);
             if (match.Success)
             {
                 result = regex.Replace(result, m =>
@@ -348,6 +386,32 @@ namespace ConsoleECS
                 });
                 //return;
             }
+
+            regex = new Regex(Function);
+            match = regex.Match(result);
+            if (match.Success)
+            {
+                result = regex.Replace(result, m =>
+                {
+                    var id = m.Groups["id"].Value;
+                    var args = new List<float>();
+                    Console.WriteLine("Function " + id);
+
+                    foreach (Capture cap in m.Groups["param"].Captures)
+                    {
+                        Console.WriteLine(": " + cap.Value);
+                        var arg = EvaluateSingle(cap.Value);
+                        args.Add(arg);
+                    }
+
+                    if (EvaluateFunction == null) throw new NoFunctionEvaluatorException();
+
+                    var functionResult = EvaluateFunction(id, args);
+                    if (functionResult == null) throw new FunctionNotDefinedException(id);
+
+                    return functionResult.ToString();
+                });
+            }
         }
 
         static string ExpressionEvaluator(Match match)
@@ -355,12 +419,11 @@ namespace ConsoleECS
             var lhName = match.Groups["lh"].Value;
             var rhName = match.Groups["rh"].Value;
 
-            if (!EvaluateSingle(lhName, out float lh)) return "null";
-
-            if (!EvaluateSingle(rhName, out float rh)) return "null";
+            float lh = EvaluateSingle(lhName);
+            float rh = EvaluateSingle(rhName);
 
             float resultValue = 0;
-        
+
             switch (match.Groups["op"].Value)
             {
                 case "*":
@@ -379,21 +442,21 @@ namespace ConsoleECS
 
             return resultValue.ToString();
         }
-        static float? EvaluateSingle(string input)
+        static float EvaluateSingle(string input)
         {
             if (EvaluateSingle(input, out float value)) return value;
-            return null;
+            throw new VariableNotDefinedException(input);
         }
         static bool EvaluateSingle(string input, out float value)
         {
             if (!float.TryParse(input, out value))
             {
-                if (EvaluateIdentifierFunction == null) return false;
+                if (EvaluateIdentifier == null) return false;
 
-                var temp = EvaluateIdentifierFunction(input);
+                var temp = EvaluateIdentifier(input);
                 if (temp == null)
                 {
-                    Console.WriteLine(input + " is not defined");
+                    //Console.WriteLine(input + " is not defined");
                     return false;
                 }
                 value = temp ?? 0;
@@ -406,6 +469,19 @@ namespace ConsoleECS
             float.TryParse(match.Groups["lh"].Value, out float lh);
             float.TryParse(match.Groups["rh"].Value, out float rh);
             return lh + " " + match.Groups["op"].Value + " " + rh;
+        }
+
+        public class VariableNotDefinedException : Exception
+        {
+            public VariableNotDefinedException(string varName) : base(varName + " is not defined") { }
+        }
+        public class FunctionNotDefinedException : Exception
+        {
+            public FunctionNotDefinedException(string varName) : base(varName + " is not defined") { }
+        }
+        public class NoFunctionEvaluatorException : Exception
+        {
+            public NoFunctionEvaluatorException() : base("No function evaluator specified") { }
         }
     }
 
