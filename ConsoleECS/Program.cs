@@ -259,6 +259,8 @@ namespace ConsoleECS
             {
                 if (result.Count("(") != result.Count(")")) return false;
 
+                done |= MatchOperation(result, out result, @"\^", Parenteses.Both);
+
                 done |= MatchOperation(result, out result, @"\*|/", Parenteses.Both);
                 //Console.WriteLine(result);
                 done |= MatchOperation(result, out result, @"\+|\-", Parenteses.Both);
@@ -267,6 +269,7 @@ namespace ConsoleECS
                 Console.WriteLine(result);
             }
             //Console.WriteLine(">"+result);
+            done |= MatchOperation(result, out result, @"\^");
             done |= MatchOperation(result, out result, @"\*|/");
             //Console.WriteLine(result);
             done |= MatchOperation(result, out result, @"\+|\-");
@@ -437,6 +440,9 @@ namespace ConsoleECS
                     break;
                 case "-":
                     resultValue = lh - rh;
+                    break;
+                case "^":
+                    resultValue = (float)Math.Pow(lh, rh);
                     break;
             }
 
